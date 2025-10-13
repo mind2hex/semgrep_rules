@@ -1,0 +1,43 @@
+rules:
+  - id: javascript.sql_injection
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "SQL Injection: Template string con interpolación dinámica detectada en contexto SQL"
+    patterns:
+      - pattern-either:
+          # Patrón 1: Asignación directa de query con SQL keywords
+          - patterns:
+              - pattern: $VAR = `...${...}...`
+              - metavariable-regex:
+                  metavariable: $VAR
+                  regex: '.*(query|sql|cmd|command|statement).*'
+          
+          # Patrón 2: Concatenación a variable que contiene query
+          - patterns:
+              - pattern: $QUERY += `...${...}...`
+              - metavariable-regex:
+                  metavariable: $QUERY
+                  regex: '.*(query|sql|cmd|command|statement).*'
+          
+          # Patrón 3: Template strings con SQL keywords
+          - patterns:
+              - pattern: $VAR = `...${...}...`
+              - metavariable-regex:
+                  metavariable: $VAR
+                  regex: '(?i).*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|filter|clause|condition) .*'
+          
+          # Patrón 4: Concatenación con SQL keywords
+          - patterns:
+              - pattern: $VAR += `...${...}...`
+              - metavariable-regex:
+                  metavariable: $SQLKW
+                  regex: '(?i).*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP BY|ORDER BY|LIMIT|OFFSET).*'
+          
+          # Patrón 5: Template strings que contienen SQL keywords al inicio
+          - patterns:
+              - pattern: $VAR = `...${...}...`
+              - metavariable-pattern:
+                  metavariable: $VAR
+                  patterns:
+                    - pattern-regex: '.*'
+              - pattern-regex: '`\s*(AND|OR|WHERE|SET|HAVING|WHEN|CASE|ON)\s.*\$\{.*'

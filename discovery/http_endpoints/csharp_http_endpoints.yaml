@@ -1,0 +1,9 @@
+rules:
+  - id: csharp.http_endpoints
+    languages:
+      - csharp
+    severity: INFO
+    message: |
+      Semgrep found the definition of an endpoint HTTP in csharp.
+    pattern-either:
+      - pattern-regex: \[Http(Post|Get|Put|Delete)\][\s\S]*?public.*\(.*\)

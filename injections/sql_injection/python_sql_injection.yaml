@@ -1,0 +1,38 @@
+rules:
+  - id: python.sql_injection
+    languages: [python]
+    severity: CRITICAL
+    message: "SQL Injection: String SQL con placeholders {} usado para interpolación dinámica"
+    patterns:
+      - pattern-either:
+          # Variable asignada con string SQL que contiene {}
+          - patterns:
+              - pattern: $VAR = "$SQLSTR"
+              - metavariable-regex:
+                  metavariable: $SQLSTR
+                  regex: '.*(?i)(exec|execute|select|insert|update|delete|declare)\b.*\{.*\}.*'
+          
+          # Directamente en .format()
+          - patterns:
+              - pattern: '"$SQLSTR".format(...)' 
+              - metavariable-regex:
+                  metavariable: $SQLSTR
+                  regex: '.*(?i)(exec|execute|select|insert|update|delete|declare)\b.*'
+          
+          # f-strings
+          - patterns:
+              - pattern-either:
+                - pattern: f"$SQLSTR{$X}$REST"
+                - pattern: f"$SQLSTR{...}..."
+              - metavariable-regex:
+                  metavariable: $SQLSTR
+                  regex: '["]*(?i)(select|delete|declare|insert|create|update|alter|drop|exec|execute) .*'
+
+          # Concatenación
+          - patterns:
+              - pattern-either:
+                  - pattern: '"$SQLSTR" + $X'
+                  - pattern: '"$SQLSTR" % $X'
+              - metavariable-regex:
+                  metavariable: $SQLSTR
+                  regex: '.*(?i)(exec|execute|select|insert|update|delete|declare)\b.*'

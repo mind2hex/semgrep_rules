@@ -1,0 +1,16 @@
+rules:
+  - id: javascript.command_injection
+    languages: [javascript, typescript]
+    severity: CRITICAL
+    message: "Command Injection: Command execution function found"
+    pattern-either:
+      - pattern: child_process.exec(...)
+      - pattern: child_process.execSync(...)
+      - pattern: child_process.spawn(...)
+      - pattern: child_process.spawnSync(...)
+      - pattern: child_process.execFile(...)
+      - pattern: child_process.execFileSync(...)
+      - pattern: shell.exec(...)
+      - pattern: execa(...)
+      - pattern: cmd.run(...)
+      - pattern: util.promisify(...)

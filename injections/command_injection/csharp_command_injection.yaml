@@ -1,0 +1,27 @@
+rules:
+  - id: csharp.command_injection
+    languages: [csharp]
+    severity: CRITICAL
+    message: "Command Injection: Command execution function found"
+    pattern-either:
+      - pattern: System.Diagnostics.Process.Start(...)
+      - pattern: Process.Start(...)
+      - pattern: new System.Diagnostics.Process() { StartInfo = $SI }.Start()
+      - pattern: new System.Diagnostics.Process().Start()
+      - pattern: new ProcessStartInfo(...)
+      - pattern: $SI.FileName = ...
+      - pattern: $SI.Arguments = ...
+      - pattern: $SI.UseShellExecute = true
+      - pattern: $SI.UseShellExecute == true
+      - pattern: $SI.RedirectStandardInput = ...
+      - pattern: $SI.RedirectStandardOutput = ...
+      - pattern: $SI.RedirectStandardError = ...
+      - pattern: $SI.WorkingDirectory = ...
+      - pattern: $SI.Environment["$VAR"] = ...
+      - pattern: System.Management.Automation.PowerShell.Create().AddScript(...).Invoke(...)
+      - pattern: System.Management.Automation.PowerShell.Create().AddScript(...).AddCommand(...).Invoke(...)
+      - pattern: System.Management.Automation.PowerShell.Invoke(...)
+      - pattern: RunspaceInvoke.Invoke(...)
+      - pattern: new ProcessExecutor(...).start(...)
+      - pattern-regex: 'ShellExecuteEx|ShellExecuteA|ShellExecuteW'
+

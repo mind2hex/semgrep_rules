@@ -1,0 +1,10 @@
+rules:
+  - id: sensitive_information_stored_in_logs
+    languages: [python, javascript, typescript]
+    message: |
+      Confidential information is being stored in logs using logging functions.
+      If an attacker gets access to the application logs, this poses a high risk
+      for the business. Avoid storing sensitive information in logs.
+    severity: LOW
+    pattern-either:
+      - pattern-regex: (?i)(logger|log)\.(?i)(info|debug|warning|error)\(.*(?i)(secret|token|credential|password|api|pool|key).*\)

@@ -1,0 +1,35 @@
+rules:
+  - id: python.code_injection
+    languages: [python]
+    severity: CRITICAL
+    message: |
+      Semgrep have found a possibly code injection vulnerability.
+      This is a vulnerability that could lead to RCE.
+    pattern-either:
+      # eval
+      - patterns: 
+          - pattern: eval(..., $OBJ, ...)
+          - pattern-not: eval("...")
+      
+      # exec
+      - patterns: 
+          - pattern: exec(..., $OBJ, ...)
+          - pattern-not: exec("...")
+      
+      # compile
+      - patterns:
+          - pattern: compile($OBJ, ...)
+          - pattern-not: compile("...")
+
+      # dynamic import
+      - patterns:
+          - pattern: importlib.import_module(..., $OBJ, ...)
+          - pattern-not: importlib.import_module("...")
+
+      # getattr
+      - patterns:
+          - pattern: |
+              $FOO = getattr(..., $OBJ, ...)
+              ...
+              $FOO(...)
+

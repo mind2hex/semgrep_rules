@@ -1,0 +1,11 @@
+rules:
+  - id: java_path_traversal
+    languages:
+      - java
+    message: Path traversal vector in java found
+    severity: MEDIUM
+    pattern-either:
+      # path traversal in files
+      - pattern: $OBJECT.transferTo(..., $VAR, ...)
+      - pattern: $OBJECT.filename()
+      - pattern: new File(..., $VAR, ...);

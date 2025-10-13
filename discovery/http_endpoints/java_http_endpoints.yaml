@@ -1,0 +1,27 @@
+rules:
+  - id: java.http_endpoints
+    languages: [java]
+    message: "Endpoint HTTP detectado"
+    severity: LOW
+    pattern-either:
+
+      # 1️⃣ Spring Framework - anotaciones de endpoint
+      - pattern-regex: '@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping|RequestMapping)\b'
+
+      # 2️⃣ Spring Functional Routing (RouterFunctions)
+      - pattern-either:
+          - pattern: RouterFunctions.route(...)
+          - pattern: RouterFunctions.route(...).andRoute(...)
+
+      # 3️⃣ JAX-RS (Jakarta EE / Jersey / RESTEasy)
+      - pattern-regex: '@(Path|GET|POST|PUT|DELETE|PATCH)\b'
+
+      # 4️⃣ Servlet (sin framework)
+      - pattern: '@WebServlet(...)'
+
+      # 5️⃣ Spark Java (framework funcional)
+      - pattern-either:
+          - pattern-regex: '\bget\s*\(.*?[''"]/.+[''"]'
+          - pattern-regex: '\bpost\s*\(.*?[''"]/.+[''"]'
+          - pattern-regex: '\bput\s*\(.*?[''"]/.+[''"]'
+          - pattern-regex: '\bdelete\s*\(.*?[''"]/.+[''"]'

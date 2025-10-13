@@ -1,0 +1,37 @@
+rules:
+  - id: python.command_injection
+    languages: [python]
+    severity: CRITICAL
+    message: |
+      Semgrep found a command execution function being used in the 
+      application. It is recommended to perform further analysis to
+      ensure no user input is being passed insecurely to this function.
+    pattern-either:
+      # os module
+      - patterns: 
+          - pattern: os.$METHOD(..., $OBJ, ...)
+          - pattern-not: os.$METHOD("...")
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (system|popen|spawn|exec|startfile|fork|forkpty|execlp|execvp)
+
+      # subprocess module
+      - patterns:
+          - pattern: subprocess.$METHOD(..., $OBJ, ...)
+          - pattern-not: os.$METHOD("...")
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (run|Popen|call|check_call|getoutput|getstatusoutput)
+
+      # pty module
+      - patterns: 
+          - pattern: pty.spawn(..., $OBJ, ...)
+          - pattern-not: pty.spawn("...")
+
+      # commands module (Python 2 only)
+      - patterns:
+          - pattern: commands.getoutput(..., $OBJ, ...)
+          - pattern-not: commands.getoutput("...")
+
+      # shlex module (not for execution, but tokenizes command strings)
+      - pattern: shlex.split(..., $OBJ, ...) 
