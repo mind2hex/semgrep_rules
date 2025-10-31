@@ -1,0 +1,34 @@
+rules:
+  - id: javascript-tainted-insecure-sqlstring-escape-implementation
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: |
+      Insecure usage of SqlString.escape inside single quotes.
+      SqlString.escape() already returns a quoted string, so wrapping it in single quotes causes
+      double quoting (''value'') and may result in SQL logic or injection issues.
+      Example:
+        BAD:  date '${SqlString.escape(userInput)}'
+        GOOD: date ${SqlString.escape(userInput)}
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 - Injection"
+      category: security
+      technology: [nodejs, javascript, sql]
+      confidence: HIGH
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: function $FUNC(...)
+          - pattern-regex: async \(.*\) \=\> \{
+
+    pattern-sinks:
+      - pattern-either:
+          - patterns:
+            - pattern-inside: |
+                `...`
+            - pattern-regex: \'\$\{.*\}\'
+            - pattern-either:
+              - pattern: $SQLSTRING.escape($OBJ)
+          
+    # fix: "NO FIX YET"
+    # arrow methods inside classes are not being detected

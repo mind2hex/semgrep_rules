@@ -1,0 +1,33 @@
+rules:
+  - id: java.path_traversal
+    languages:
+      - java
+    severity: ERROR
+    message: |
+      Semgrep found a dinamically formed filename in the application.
+    pattern-either:
+      # SIMPLE CONCATENATION WITH FUNCTION PARAMETER
+      - patterns:
+          - pattern: |
+              $RETURNTYPE $FUNCTION(..., $FOO, ...){
+                ...
+                $OBJ.concat(..., $FOO, ...);
+                ...
+              }
+
+      # CONCATENATION WITH REQUEST PARAMETER
+      - patterns: 
+        - pattern: |
+            $RETURNTYPE $FUNCTION(..., HttpServletRequest req, ...){
+              ...
+              $FOO = req.$METHOD(...);
+              ...
+              new File(... + $FOO);
+            }
+
+      # CONCATEN
+      - patterns:
+        - pattern-either:
+            - pattern: new File(... + $FOO);
+            - pattern: new File($FOO + ...);
+            

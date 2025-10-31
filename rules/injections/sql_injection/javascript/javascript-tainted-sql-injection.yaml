@@ -1,0 +1,61 @@
+rules:
+  - id: javascript-tainted-sql-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: |
+      Semgrep found a possible sql injection vulnerability.
+    mode: taint
+    pattern-sources:
+      # Express.js typical
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      # Fastify / Koa
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      # Generic function args
+      - pattern: function $FUNC(...) 
+      - pattern: async function $FUNC(...)
+      - patterns:
+        - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+        - focus-metavariable: $PARAM
+      # External JSON.parse() or user input parsing
+      - pattern: JSON.parse($ARG)
+
+    pattern-sanitizers:
+      - pattern: SqlString.escape($X)
+      - pattern: connection.escape($X)
+      - pattern: validator.escape($X)
+
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: $FOO = "$SQLSTR" + ...;
+          - pattern: $FOO = `$SQLSTR${...}`;
+          - pattern: $FOO = `$SQLSTR${...}...`;
+          - pattern: '`$SQLSTR${...}...`;'
+          - pattern: $ORM.query(`$SQLSTR${...}...`);
+          - pattern: return "$SQLSTR" + ...;
+          - pattern: return `$SQLSTR${...}`;
+          - pattern: return `$SQLSTR${...}...`
+        - metavariable-regex:
+            metavariable: $SQLSTR
+            regex: '[ ]{0,1}(?i)(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|filter|clause|condition) .*'
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs

@@ -1,0 +1,25 @@
+rules:
+  - id: java.sql_injection
+    languages:
+      - java
+    severity: ERROR
+    message: |
+      Semgrep found a dinamically formed sql query in the application.
+    patterns:
+      - pattern-either:
+        # simple concatenations
+        - patterns:
+            - pattern-either:
+                - pattern: $FOO = "$QUERY" + $OBJ + ...
+                - pattern: |
+                    String $FOO = "$QUERY" + $OBJ + ...;
+                    ...
+                    $FUNCTION.executeQuery($FOO);
+                
+        # STRING FORMAT
+        - patterns: 
+            - pattern: String $FOO = String.format($QUERY, ..., $OBJ, ...);
+
+      - metavariable-regex:
+          metavariable: $QUERY
+          regex: ".*(?:AND|OR|NOT|SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|ON|USING|GROUP|BY|ORDER|HAVING|LIMIT|OFFSET|UNION|ALL|DISTINCT|INTO|VALUES|CREATE|ALTER|DROP|TRUNCATE|RENAME|REPLACE|MERGE|EXEC|EXECUTE|DECLARE|SET|CAST|CONVERT|GRANT|REVOKE|COMMIT|ROLLBACK|BEGIN|TRANSACTION|SAVEPOINT|SHOW|DESCRIBE|EXPLAIN|LOCK|UNLOCK|BACKUP|RESTORE|USE|DATABASE|TABLE|VIEW|INDEX|PRIMARY|KEY|FOREIGN|REFERENCES|CONSTRAINT|CHECK|DEFAULT|CASE|WHEN|THEN|ELSE|END|LIKE|BETWEEN|IN|EXISTS|ANY|SOME|ALL|PROCEDURE|FUNCTION|TRIGGER|CURSOR|FETCH|OPEN|CLOSE|WITH|RECURSIVE|ANALYZE|OPTIMIZE|COMMENT).*"

@@ -1,0 +1,53 @@
+rules:
+  - id: javascript.http_endpoints
+    languages:
+      - javascript
+      - typescript
+    message: Semgrep found HTTP endpoint definitions in code.
+    severity: INFO
+    pattern-either:
+      # express.js/koa.js
+      - patterns:
+          - pattern: |
+              $APP.$HTTPMETHOD("...", (...) => {
+                ...
+              });
+          - metavariable-regex:
+              metavariable: $HTTPMETHOD
+              regex: (get|post|put|delete)
+
+      # fastify
+      - pattern-either:
+          - patterns:
+            - pattern: |
+                fastify.$HTTPMETHOD("...", {...}, (...) => {...});
+            - metavariable-regex:
+                metavariable: $HTTPMETHOD
+                regex: (get|post|put|delete)
+          - patterns:
+            - pattern: $FOO.$HTTPMETHOD("...", ...);
+            - pattern-inside: |
+                export const $ROUTES = async (...): Promise<void> =>{
+                ...
+                }
+            - metavariable-regex:
+                metavariable: $HTTPMETHOD
+                regex: (get|post|put|delete)
+
+      # nestjs
+      - patterns:
+          - pattern: |
+              @$HTTPMETHOD
+              $FOO(...){...}
+          - metavariable-regex:
+              metavariable: $HTTPMETHOD
+              regex: (Get|Post|Put|Delete)
+
+      # koa.js
+      - patterns:
+          - pattern: |
+              {
+                method: "...",
+                path: "...",
+                handler: ...
+              }

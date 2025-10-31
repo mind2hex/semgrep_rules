@@ -1,0 +1,46 @@
+rules:
+  - id: javascript.code_injection
+    languages:
+      - javascript
+    severity: ERROR
+    message: |
+      Semgrep have found a possibly code injection vulnerability.
+      This is a vulnerability that could lead to RCE.
+    pattern-either:
+      # eval
+      - pattern-either:
+          - patterns:
+              - pattern: eval($INPUT);
+              - pattern-inside: function $FOO(..., $INPUT, ...){...}
+          - patterns:
+              - pattern: eval(...);
+              - pattern-not: eval("...");
+      
+      # function | constructors
+      - pattern-either:
+          - patterns: 
+              - pattern: new Function(..., $INPUT, ...);
+              - pattern-inside: |
+                  function $FOO(..., $INPUT, ...){ 
+                    ... 
+                  }
+          
+          - patterns:
+              - pattern: new Function(..., `return ${$INPUT}`);
+              - pattern-inside:
+                  function $FOO(..., $INPUT, ...){
+                    ...
+                  }
+      
+      # setInterval/setInmediate
+      - pattern-either:
+          - patterns:
+            - pattern: $SETFUNCTION(..., $INPUT, ...);
+            - pattern-inside: |
+                function $FOO(..., $INPUT, ...){ 
+                  ... 
+                }
+            - metavariable-regex:
+                metavariable: $SETFUNCTION
+                regex: (setInterval|setImmediate)
+          
