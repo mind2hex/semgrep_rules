@@ -1,0 +1,109 @@
+rules:
+  - id: python-tainted-sql-injection
+    languages:
+      - python
+    severity: HIGH
+    message: |
+      Semgrep found a possibly sql injection vulnerability using taint analysis.
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: request.GET
+          - pattern: request.POST
+          - pattern: request.body
+          - pattern: request.path
+          - pattern: request.path_info
+          - pattern: request.content_params
+          - pattern: request.query_params
+          - pattern: request.data
+          - pattern: request.FILES
+          - pattern: request.META.get(...)
+          - pattern: request.headers
+          - pattern: request.COOKIES
+      - pattern-either:
+          - pattern: request.args
+          - pattern: request.form
+          - pattern: request.files
+          - pattern: request.values
+          - pattern: request.json
+          - pattern: request.get_json(...)
+          - pattern: request.cookies
+          - pattern: request.view_args
+      - pattern-either:
+          - pattern: request.path_params
+          - pattern: request.file()
+      - pattern-either:
+          - pattern: request.state
+      - pattern-either:
+          - pattern: self.request.arguments
+          - pattern: self.request.query_arguments
+          - pattern: self.request.body_arguments
+          - pattern: self.request.files
+          - pattern: self.request.path_args
+          - pattern: self.request.path_kwargs
+          - pattern: self.request.headers
+          - pattern: self.request.cookies
+      - pattern-either:
+          - pattern: request.params
+          - pattern: request.matchdict
+          - pattern: request.json_body
+      - pattern-either:
+          - pattern: request.query
+          - pattern: request.forms
+      - patterns:
+          - pattern: |
+              def $FOO(..., $X, ...):
+                ...
+          - focus-metavariable: $X
+    pattern-sanitizers:
+      - pattern: django.db.connection.ops.quote_name(...)
+      - pattern: django.db.models.expressions.RawSQL(...)
+      - pattern: sqlalchemy.text(...)
+      - pattern: sqlalchemy.sql.expression.text(...)
+      - pattern: sqlalchemy.sql.expression.literal(...)
+      - pattern: sqlalchemy.sql.expression.literal_column(...)
+      - pattern: pymysql.converters.escape_string(...)
+      - pattern: pymysql.escape_string(...)
+      - pattern: psycopg2.extensions.quote_ident(...)
+      - pattern: sqlite3.dbapi2.iterdump(...)
+      - pattern: MySQLdb.escape_string(...)
+      - pattern: MySQLdb.converters.escape(...)
+      - pattern: MySQLdb.converters.escape_sequence(...)
+      - pattern: oursql.escape(...)
+      - pattern: psycopg2.extensions.adapt(...)
+      - pattern: psycopg2.extensions.AsIs(...)
+      - pattern: psycopg2.extensions.QuotedString(...)
+      - pattern: asyncpg.quote(...)
+      - pattern: mysql.connector.conversion.escape(...)
+      - pattern: mysql.connector.conversion.MySQLConverter(...)
+      - pattern: cx_Oracle.DatabaseError(...)
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - patterns:
+                  - pattern: f"$SQLSTR{$X}..."
+              - pattern-either:
+                  - pattern: $FOO = "$SQLSTR" % (...)
+                  - pattern: $FOO("$SQLSTR" % (...))
+              - pattern-either:
+                  - pattern: $FOO = "$SQLSTR" + $X + ...
+                  - pattern: $FOO += "$SQLSTR" + $X + ...
+                  - pattern: $FOO("$SQLSTR" + $X + ...)
+          - metavariable-regex:
+              metavariable: $SQLSTR
+              regex: "[ ]{0,1}(?i)(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|filter|clause|condition) .*"
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - flask
+        - django
