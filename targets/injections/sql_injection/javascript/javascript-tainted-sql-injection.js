@@ -28,14 +28,18 @@ function runQuery(data) {
 }
 
 // EXAMPLE 5
-const where = "id=" + req.query.id;
-// ruleid: javascript-tainted-sql-injection
-const sql = "SELECT * FROM users WHERE " + where; // ⚠️ concatenación → query
-sequelize.query(sql);
+function foo(){
+    const where = "id=" + req.query.id;
+    // ruleid: javascript-tainted-sql-injection
+    const sql = "SELECT * FROM users WHERE " + where; // ⚠️ concatenación → query
+    sequelize.query(sql);
+}
 
 // EXAMPLE 6
-// ruleid: javascript-tainted-sql-injection
-await sequelize.query(`SELECT * FROM orders WHERE status = '${req.query.status}'`); // ⚠️ interpolación
+function foo(){
+    // ruleid: javascript-tainted-sql-injection
+    await sequelize.query(`SELECT * FROM orders WHERE status = '${req.query.status}'`); // ⚠️ interpolación
+}
 
 // EXAMPLE 7
 function buildQuery(filter) {
@@ -123,3 +127,24 @@ const function_name = async (parameter) =>{
     `WHERE ${column}.material = ${SqlString.escape(parameter)}`
     return query
 }
+
+// FP EXAMPLE 12
+function foo(data){
+    // ok: javascript-tainted-sql-injection
+    const encabezado = await t.one(
+        `INSERT INTO table (...)
+                VALUES ($<val1>, $<val2>, ${GLOBAL.FOO})
+                RETURNING asd`,
+        {
+            data
+        },
+    );
+
+    // ok: javascript-tainted-sql-injection
+    await t.none(
+        `UPDATE foo SET asd = $1, estado = ${asd.FOO}
+            WHERE asd = $2`,
+        [data],
+    );
+}
+

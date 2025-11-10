@@ -17,10 +17,11 @@ rules:
       - pattern: request.body
       - pattern: request.query
       - pattern: request.params
-      #  FUNCTION ARGS
+      # Generic function args
+      - pattern: function $FUNC(...) 
       - patterns:
-          - pattern: function $FUN(..., $SOURCE, ...)
-          - focus-metavariable: $SOURCE
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
       - patterns:
           - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
           - focus-metavariable: $SOURCE

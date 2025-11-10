@@ -41,6 +41,28 @@ semgrep --config "p/javascript" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/typescript" -j 30 --metrics off -v --timeout=15
 ```
 
+```yaml
+# common pattern-sources
+    pattern-sources:
+        # Express.js typical
+        - pattern: req.body
+        - pattern: req.query
+        - pattern: req.params
+        # Fastify / Koa
+        - pattern: request.body
+        - pattern: request.query
+        - pattern: request.params
+        # Generic function args
+        - pattern: function $FUNC(...) 
+        - patterns:
+            - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+            - focus-metavariable: $PARAM
+        - patterns:
+            - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+            - focus-metavariable: $SOURCE
+```
+
+
 ## Java Specifics
 ```bash
 # rulesets
