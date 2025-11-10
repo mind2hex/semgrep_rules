@@ -1,0 +1,46 @@
+rules:
+  - id: javascript-tainted-log-injection
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      Semgrep found a possible log injection vulnerability using taint analysis.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - pattern: function $FUNC(...)
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern: $LOGGER.$METHOD(...)
+          - metavariable-regex:
+              metavariable: $LOGGER
+              regex: (?i)(logger|log|logging|debug)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (?i)(trace|debug|info|warn|warning|error|fatal|log)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-117: Improper Output Neutralization for Logs"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs
+        - expressjs

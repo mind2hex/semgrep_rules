@@ -1,0 +1,74 @@
+rules:
+  - id: python-tainted-command-injection
+    languages:
+      - python
+    severity: CRITICAL
+    message: |
+      Semgrep found a command execution function being used in the 
+      application. It is recommended to perform further analysis to
+      ensure no user input is being passed insecurely to this function.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (GET|POST|body|path|path_info|content_params|query_params|data|FILES|META|headers|COOKIES|args|form|files|values|json|get_json|cookies|view_args|path_params|file|state|params|matchdict|json_body|query|forms)
+      - patterns:
+          - pattern: self.request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (arguments|query_arguments|body_arguments|files|path_args|path_kwargs|headers|cookies)
+      - pattern: self.get_argument(...)
+      - patterns:
+          - pattern: |
+              def $FOO(..., $X, ...):
+                ...
+          - focus-metavariable: $X
+    pattern-sinks:
+      - patterns:
+          - pattern: os.$METHOD(...)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (system|popen|spawn|exec|startfile|fork|forkpty|execl|execle|execlp|execv|execve|execvp|execvpe|spawnl|spawnle|spawnv|spawnve|spawnlp|spawnlpe|spawnvp|spawnvpe|posix_spawn|posix_spawnp)
+      - patterns:
+          - pattern: subprocess.$METHOD(...)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (run|Popen|call|check_call|check_output|getoutput|getstatusoutput)
+      - patterns:
+          - pattern: asyncio.$METHOD(...)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (create_subprocess_shell|create_subprocess_exec|subprocess.create_subprocess_exec|subprocess.create_subprocess_shell)
+      - pattern: $LOOP.subprocess_shell(...)
+      - pattern: $LOOP.subprocess_exec(...)
+      - pattern: await asyncio.$METHOD(...)
+      - pattern: await $LOOP.subprocess_shell(...)
+      - pattern: await $LOOP.subprocess_exec(...)
+      - pattern: pty.spawn(...)
+      - pattern: platform.popen(...)
+      - pattern: commands.getoutput(...)
+      - pattern: commands.getstatusoutput(...)
+      - pattern: fabric.Connection.run(...)
+      - pattern: fabric.api.local(...)
+      - pattern: invoke.run(...)
+      - pattern: sh.Command(...)
+      - pattern: sh.$CMD(...)
+      - pattern: plumbum.local[...](...)
+      - pattern: shlex.split(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-77: Improper Neutralization of Special Elements used in a Command
+          ('Command Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - flask
+        - django

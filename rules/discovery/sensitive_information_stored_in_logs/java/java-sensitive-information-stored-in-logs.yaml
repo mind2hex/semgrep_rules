@@ -1,0 +1,30 @@
+rules:
+  - id: java-sensitive-information-stored-in-logs
+    languages:
+      - java
+    severity: ERROR
+    message: |
+      The application is storing sensitive information in logs.
+    pattern-either:
+      - patterns:
+          - pattern: $LOGGER.$METHOD(..., $SECRET, ...);
+          - metavariable-regex:
+              metavariable: $LOGGER
+              regex: (?i)(log|logger|logging)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (?i)(info|debug|warning|error)
+          - metavariable-regex:
+              metavariable: $SECRET
+              regex: (?i)(jwt|jwttoken|token|secret|password|api|key|pass)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-532: Insertion of Sensitive Information into Log File"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      technology:
+        - springframework

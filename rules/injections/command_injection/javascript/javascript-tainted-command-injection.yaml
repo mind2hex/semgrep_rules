@@ -1,0 +1,73 @@
+rules:
+  - id: javascript-tainted-command-injection
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: Semgrep found a possible command injection vulnerability using taint
+      analysis.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - pattern: function $FUNC(...)
+      - patterns:
+          - pattern: const $FUNC = function (..., $SOURCE, ...) { ... }
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: $FOO = (..., $SOURCE, ...) => { ... }
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern-inside: |
+              $APP.$METHOD($PATH, (...) => { ... })
+          - pattern-either:
+              - patterns:
+                  - pattern: ({ $VAR, ... }, ...) => { ... }
+                  - focus-metavariable: $VAR
+              - patterns:
+                  - pattern-inside: |
+                      ({ $PROP: { ..., $VAR, ... }, ... }, ...) => { ... }
+                  - pattern: $VAR
+      - patterns:
+          - pattern-inside: |
+              $ROUTER.$METHOD($PATH, async ($CTX) => { ... })
+          - pattern: $CTX
+    pattern-sinks:
+      - pattern: child_process.exec(...)
+      - pattern: child_process.exec(`...`)
+      - pattern: child_process.execSync(...)
+      - pattern: child_process.spawn(...)
+      - pattern: child_process.spawnSync(...)
+      - pattern: child_process.execFile(...)
+      - pattern: child_process.execFileSync(...)
+      - pattern: child_process.fork(...)
+      - pattern: exec(...)
+      - pattern: execSync(...)
+      - pattern: spawn(...)
+      - pattern: spawnSync(...)
+      - pattern: execFile(...)
+      - pattern: execFileSync(...)
+      - pattern: fork(...)
+      - pattern: shell.exec(...)
+      - pattern: execa(...)
+      - pattern: cmd.run(...)
+      - pattern: util.promisify(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-77: Improper Neutralization of Special Elements used in a Command
+          ('Command Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - expressjs
+        - nodejs
