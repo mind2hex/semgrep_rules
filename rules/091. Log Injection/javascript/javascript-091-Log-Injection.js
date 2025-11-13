@@ -1,3 +1,15 @@
+// EXAMPLE 0: pino logger
+const log = require("pino")();
+const refresh = async (req, res) => {
+    // ruleid: javascript-tainted-log-injection
+    const logger = log.child({
+        user: req.name,
+    });
+
+    // ruleid: javascript-tainted-log-injection
+    logger.info({ entrada: req.body }, "refresh");
+}
+
 // EXAMPLE 1: simple log injection
 function foo(arg){
     // ruleid: javascript-tainted-log-injection

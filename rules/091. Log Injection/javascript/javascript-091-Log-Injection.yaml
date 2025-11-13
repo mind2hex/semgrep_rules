@@ -1,0 +1,50 @@
+rules:
+  - id: javascript-091-Log-Injection
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: >
+      The system logs entries that contain input from untrusted sources without
+      properly validating, sanitizing or escaping their content.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - pattern: function $FUNC(...)
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern: $LOGGER.$METHOD(...);
+          - metavariable-regex:
+              metavariable: $LOGGER
+              regex: (?i)(logger|log|debug|debugger)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (?i)(info|debug|warn|warning|error|log)
+      - patterns:
+          - pattern-inside: const $LOGGER = require("pino")(); ...
+          - pattern: $LOGGER.child(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-117: Improper Output Neutralization for Logs"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs
+        - expressjs

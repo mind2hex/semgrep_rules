@@ -36,16 +36,14 @@ semgrep --config "p/misconfigurations"
 ```
 
 ## Javascript/Typescript Specifics
-```bash
-# rulesets
+```bash # rulesets
 semgrep --config "p/nodejs" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/expressjs" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/javascript" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/typescript" -j 30 --metrics off -v --timeout=15
 ```
 
-```yaml
-# common pattern-sources
+```yaml # common pattern-sources
     pattern-sources:
         # Express.js typical
         - pattern: req.body
@@ -67,12 +65,94 @@ semgrep --config "p/typescript" -j 30 --metrics off -v --timeout=15
 
 
 ## Java Specifics
-```bash
-# rulesets
+```bash # rulesets
 semgrep --config "p/java" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/mobsfscan" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/findsecbugs" -j 30 --metrics off -v --timeout=15
+```
 
+```yaml # common pattern-sources
+    pattern-sources:
+      # javax.servlet.http.HttpServletRequest
+      - pattern-either:
+        - pattern: $REQUEST.getParameter(...)
+        - pattern: $REQUEST.getParameterValues(...)
+        - pattern: $REQUEST.getParameterMap()
+        - pattern: $REQUEST.getQueryString()
+        - pattern: $REQUEST.getHeader(...)
+        - pattern: $REQUEST.getHeaders(...)
+        - pattern: $REQUEST.getCookies()
+
+      # javax.servlet.ServletRequest
+      - pattern-either:
+        - pattern: $REQUEST.getParameter(...)
+        - pattern: $REQUEST.getParameterValues(...)
+        - pattern: $REQUEST.getParameterMap()
+        - pattern: $REQUEST.getQueryString()
+        - pattern: $REQUEST.getInputStream()
+        - pattern: $REQUEST.getReader()
+
+      # java.sql.ResultSet
+      - pattern-either:
+        - pattern: $RESULT_SET.getString(...)
+        - pattern: $RESULT_SET.getObject(...)
+        - pattern: $RESULT_SET.getInt(...)
+        - pattern: $RESULT_SET.getLong(...)
+        - pattern: $RESULT_SET.getFloat(...)
+        - pattern: $RESULT_SET.getDouble(...)
+        - pattern: $RESULT_SET.getBigDecimal(...)
+        - pattern: $RESULT_SET.getDate(...)
+        - pattern: $RESULT_SET.getTime(...)
+        - pattern: $RESULT_SET.getTimestamp(...)
+
+      # org.springframework.web.servlet.mvc.Controller
+      - pattern-either:
+        - pattern: $REQUEST.getParameter(...)
+        - pattern: $REQUEST.getParameterValues(...)
+        - pattern: $REQUEST.getParameterMap()
+
+      # org.springframework.web.bind.annotation.RequestParam
+      - pattern-either:
+        - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestParam(...) $PARAM, ...) { ... }
+
+      # org.springframework.web.bind.annotation.PathVariable
+      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @PathVariable(...) $PARAM, ...) { ... }
+
+      # org.springframework.web.bind.annotation.RequestBody
+      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestBody $PARAM, ...) { ... }
+
+      # org.springframework.web.bind.annotation.ModelAttribute
+      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @ModelAttribute(...) $PARAM, ...) { ... }
+
+      # org.springframework.jdbc.core.JdbcTemplate
+      - pattern: $JDBC_TEMPLATE.query(...)
+      - pattern: $JDBC_TEMPLATE.queryForObject(...)
+      - pattern: $JDBC_TEMPLATE.queryForList(...)
+      - pattern: $JDBC_TEMPLATE.queryForMap(...)
+      - pattern: $JDBC_TEMPLATE.queryForRowSet(...)
+      - pattern: $JDBC_TEMPLATE.queryForStream(...)
+      - pattern: $JDBC_TEMPLATE.update(...)
+      - pattern: $JDBC_TEMPLATE.execute(...)
+
+      # javax.persistence.EntityManager
+      - pattern: $ENTITY_MANAGER.createQuery(...)
+      - pattern: $ENTITY_MANAGER.createNativeQuery(...)
+
+      # org.hibernate.Session
+      - pattern: $SESSION.createQuery(...)
+      - pattern: $SESSION.createSQLQuery(...)
+      - pattern: $SESSION.createFilter(...)
+
+      # java.util.Map
+      - pattern: $MAP.get(...)
+      - pattern: $MAP.getOrDefault(...)
+      - pattern: $MAP.keySet()
+      - pattern: $MAP.values()
+      - pattern: $MAP.entrySet()
+
+      - patterns:
+        - pattern: $RETURNTYPE $FOO(..., $X, ...){ ... }
+        - focus-metavariable: $X
 ```
 
 ## C# Specifics

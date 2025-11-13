@@ -1,10 +1,12 @@
 rules:
-  - id: java-tainted-sql-injection
+  - id: java-091-Log-Injection
     languages:
       - java
-    severity: ERROR
-    message: |
-      Semgrep found a possibly sql injection vulnerability using taint analysis.
+    severity: CRITICAL
+    message: >
+      The system logs entries that contain input from untrusted sources without
+      properly validating, sanitizing or escaping their content.
+    mode: taint
     pattern-sources:
       # javax.servlet.http.HttpServletRequest
       - pattern-either:
@@ -86,5 +88,24 @@ rules:
       - patterns:
         - pattern: $RETURNTYPE $FOO(..., $X, ...){ ... }
         - focus-metavariable: $X
+
     pattern-sinks:
-    
+      - patterns:
+          - pattern: $LOGGER.$METHOD(...);
+          - metavariable-regex:
+              metavariable: $LOGGER
+              regex: (?i)(logger|log|debug|debugger)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (?i)(info|debug|warn|warning|error|log)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-117: Improper Output Neutralization for Logs"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW
+      owasp:
+        - A3:2021 Injection
