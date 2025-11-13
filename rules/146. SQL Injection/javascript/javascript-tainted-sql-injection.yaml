@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-tainted-sql-injection
+  - id: javascript-146-Sql-Injection
     languages:
       - javascript
       - typescript
@@ -29,6 +29,14 @@ rules:
       - pattern: SqlString.escape($X)
       - pattern: connection.escape($X)
       - pattern: validator.escape($X)
+      - patterns:
+        - pattern: $LOGGER.$METHOD(...)
+        - metavariable-regex:
+            metavariable: $LOGGER
+            regex: (?i)(logger|log|logging|debug|logdebug)
+        - metavariable-regex:
+            metavariable: $METHOD
+            regex: (?i)(log|logging|warn|warning|error|err|report|trace|logdebug)
 
     pattern-sinks:
       - patterns:

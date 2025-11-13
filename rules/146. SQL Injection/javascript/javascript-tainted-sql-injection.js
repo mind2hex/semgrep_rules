@@ -148,3 +148,8 @@ function foo(data){
     );
 }
 
+// FP EXAMPLE 13
+function foo(transactionId){
+  // ok: javascript-tainted-sql-injection
+  Logger.logDebug(`UploadChargesChannelUse - uploadCharges - ${transactionId}`, '',`INSERT INTO ${config.TABLE_DETECTID_IMAGE_FAKE}`);
+}
