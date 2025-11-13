@@ -1,0 +1,60 @@
+rules:
+  - id: javascript-tainted-prototype-pollution
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: >
+      Semgrep found a possible prototype pollution vulnerability using taint
+      analysis.
+    mode: taint
+    pattern-sources:
+      # Express.js typical
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      # Fastify / Koa
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      # Generic function args
+      - pattern: function $FUNC(...) 
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      # DIRECT PROTOTYPE POLLUTION
+      - patterns:
+          - pattern: $OBJ[$ATTR] = $X;
+          - focus-metavariable: $X
+          - pattern-not: $X["..."]
+          
+      # LODASH METHODS
+      - pattern-either:
+          - pattern: _.merge(..., $SINK, ...)
+          - pattern: _.mergeWith(..., $SINK, ...)
+          - pattern: _.defaultsDeep(..., $SINK, ...)
+          - pattern: _.set(..., $PATH, ...)
+          - pattern: _.setWith(..., $PATH, ...)
+          - pattern: _.assign(..., $SINK, ...)
+          - pattern: _.extend(..., $SINK, ...)
+          - pattern: _.zipObjectDeep($KEYS, ...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-1321: Improperly Controlled Modification of Object Prototype
+          Attributes"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A4:2021 Insecure Design
+        - A6:2021 Vulnerable and Outdated Components
+      technology:
+        - nodejs
+        - expressjs

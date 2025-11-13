@@ -1,0 +1,21 @@
+rules:
+  - id: json-056-Annonymous-Connection
+    languages:
+      - json
+    severity: ERROR
+    message: >
+      Due to an improper configuration of the server (e.g., an FTP service with username: anonymous and password: guest or an SMTP open relay), it is possible to make anonymous connections to it and access otherwise protected resources.
+    pattern-either:
+      - patterns:
+          - pattern: '"anonymousAuthentication": true'
+          - pattern-inside: |
+              "iisSettings": ...
+    metadata:
+      category: security
+      subcategory:
+        - secure default
+      cwe:
+        - "CWE-287: Improper Authentication"
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW

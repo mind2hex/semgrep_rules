@@ -1,0 +1,57 @@
+rules:
+  - id: javascript-000-Code-Injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - pattern: function $FUNC(...)
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - pattern: JSON.parse($ARG)
+    pattern-sinks:
+      - pattern: eval(...)
+      - pattern: new Function(..., $INPUT);
+      - patterns:
+          - pattern: new Function(..., `$INPUT`);
+          - focus-metavariable: $INPUT
+      - patterns:
+          - pattern: $SETFUNCTION($INPUT, ...);
+          - metavariable-regex:
+              metavariable: $SETFUNCTION
+              regex: (setInterval|setImmediate|setTimeout)
+          - focus-metavariable: $INPUT
+      - patterns:
+          - pattern: $OBJ.innerHTML = $SINK
+          - focus-metavariable: $SINK
+      - patterns:
+          - pattern: $OBJ.setAttribute(..., $SINK)
+          - focus-metavariable: $SINK
+      - pattern: document.write(...)
+      - pattern: document.body.insertAdjacentHTML(...)
+      - pattern: document.createElement(...)
+      - pattern: window.location = ...
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs
+        - expressjs

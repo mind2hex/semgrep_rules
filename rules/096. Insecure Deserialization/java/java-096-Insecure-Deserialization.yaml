@@ -1,0 +1,95 @@
+rules:
+  - id: java-096-Insecure-Deserialization
+    languages:
+      - java
+    message: The system deserializes objects without first validating their content
+      nor casting them to a specific type.
+    severity: CRITICAL
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - patterns:
+              - pattern: $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+              - focus-metavariable: $SOURCE
+          - patterns:
+              - pattern: public $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+              - focus-metavariable: $SOURCE
+          - patterns:
+              - pattern: private $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+              - focus-metavariable: $SOURCE
+          - patterns:
+              - pattern: protected $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+              - focus-metavariable: $SOURCE
+          - patterns:
+              - pattern: internal $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+              - focus-metavariable: $SOURCE
+      - pattern-either:
+          - pattern: Request.QueryString[$SOURCE]
+          - pattern: Request.QueryString.Get($SOURCE)
+          - pattern: Request.Form[$SOURCE]
+          - pattern: Request.Form.Get($SOURCE)
+          - pattern: Request.Params[$SOURCE]
+          - pattern: Request[$SOURCE]
+          - pattern: Request.Headers[$SOURCE]
+          - pattern: Request.Cookies[$SOURCE]
+          - pattern: Request.ServerVariables[$SOURCE]
+          - pattern: Request.UserHostAddress
+          - pattern: Request.UserAgent
+          - pattern: Request.UrlReferrer
+          - pattern: Request.RawUrl
+          - pattern: Request.Path
+          - pattern: Request.PathInfo
+          - pattern: Request.Url.Query
+          - pattern: Request.HttpMethod
+      - pattern-either:
+          - pattern: HttpContext.Request.Query[$SOURCE]
+          - pattern: HttpContext.Request.Form[$SOURCE]
+          - pattern: HttpContext.Request.Headers[$SOURCE]
+          - pattern: HttpContext.Request.Cookies[$SOURCE]
+          - pattern: HttpContext.Request.RouteValues[$SOURCE]
+          - pattern: HttpContext.Request.Path
+          - pattern: HttpContext.Request.PathBase
+          - pattern: HttpContext.Request.QueryString
+          - pattern: HttpContext.Request.Body
+          - pattern: HttpContext.Connection.RemoteIpAddress
+    pattern-sinks:
+      - pattern: new ObjectInputStream(...);
+      - pattern: new XMLDecoder(...);
+      - patterns:
+          - pattern-inside: Kryo $KRYO = new Kryo(); ...
+          - pattern: $KRYO.readClassAndObject(...)
+      - patterns:
+          # need improvement
+          - pattern-inside: ObjectMapper $MAPPER = new ObjectMapper(); ...
+          # - pattern-inside: $MAPPER.enableDefaultTyping(); ...
+          - pattern: $MAPPER.readValue(..., Object.class)
+      - patterns:
+          - pattern-inside: XStream $XSTREAM = new XStream(); ...
+          - pattern: $XSTREAM.fromXML(...)
+      - patterns:
+          - pattern-inside: Yaml $YAML = new Yaml(); ...
+          - pattern: $YAML.load(...)
+      - patterns: 
+          # tofix
+          - pattern-inside: |
+              {
+                ...
+                ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+                ...
+              }
+          - pattern: JSON.parse(...);
+      - pattern: TypeToken.get(...).getType();
+      - pattern: Map $MAP = (Map) ...;
+      - pattern: new HessianInput(...);
+      - pattern: Marshalling.createByteInput(...);
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-502: Deserialization of Untrusted Data"
+      confidence: LOW
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A8:2017 Insecure Deserialization

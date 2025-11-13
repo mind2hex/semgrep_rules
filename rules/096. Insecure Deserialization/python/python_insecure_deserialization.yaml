@@ -1,0 +1,45 @@
+rules:
+  - id: python.insecure_deserialization
+    languages:
+      - python
+    severity: CRITICAL
+    message: |
+      The system deserializes objects without first validating their content nor casting them to a specific type.
+    pattern-either:
+      # pickle.loads
+      - patterns:
+          - pattern-either:
+            - pattern: pickle.$METHOD(..., $OBJ, ...)
+          - pattern-not: pickle.$METHOD("...")
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (load|loads)
+
+      # marshal
+      - patterns:
+        - pattern-either:
+          - pattern: marshal.$METHOD(..., $OBJ, ...)
+        - pattern-not: marshal.$METHOD("...")
+        - metavariable-regex:
+            metavariable: $METHOD
+            regex: (load|loads)
+
+      # yaml.load
+      - patterns:
+        - pattern-either:    
+          # simple yaml usage
+          - pattern: yaml.$VULN_METHOD(..., $OBJ, ...)
+          # yaml with request data
+          - pattern: |
+              $FOO = request.$METHOD.decode()
+              ...
+              yaml.$VULN_METHOD(..., $FOO, ...)
+          - pattern: |
+              $FOO = request.$METHOD()
+              ...
+              yaml.$VULN_METHOD(..., $FOO, ...)
+        - pattern-not: yaml.load("...")
+        - metavariable-regex:
+            metavariable: $VULN_METHOD
+            regex: (load|unsafe_load)
+

@@ -1,0 +1,116 @@
+rules:
+  - id: java-404-OS-Command-Injection
+    languages:
+      - java
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getCookies()
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+      - pattern-either:
+          - pattern: $RESULT_SET.getString(...)
+          - pattern: $RESULT_SET.getObject(...)
+          - pattern: $RESULT_SET.getInt(...)
+          - pattern: $RESULT_SET.getLong(...)
+          - pattern: $RESULT_SET.getFloat(...)
+          - pattern: $RESULT_SET.getDouble(...)
+          - pattern: $RESULT_SET.getBigDecimal(...)
+          - pattern: $RESULT_SET.getDate(...)
+          - pattern: $RESULT_SET.getTime(...)
+          - pattern: $RESULT_SET.getTimestamp(...)
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+      - pattern-either:
+          - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestParam(...) $PARAM, ...) {
+              ... }
+      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @PathVariable(...) $PARAM, ...) {
+          ... }
+      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestBody $PARAM, ...) { ... }
+      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @ModelAttribute(...) $PARAM, ...)
+          { ... }
+      - pattern: $JDBC_TEMPLATE.query(...)
+      - pattern: $JDBC_TEMPLATE.queryForObject(...)
+      - pattern: $JDBC_TEMPLATE.queryForList(...)
+      - pattern: $JDBC_TEMPLATE.queryForMap(...)
+      - pattern: $JDBC_TEMPLATE.queryForRowSet(...)
+      - pattern: $JDBC_TEMPLATE.queryForStream(...)
+      - pattern: $JDBC_TEMPLATE.update(...)
+      - pattern: $JDBC_TEMPLATE.execute(...)
+      - pattern: $ENTITY_MANAGER.createQuery(...)
+      - pattern: $ENTITY_MANAGER.createNativeQuery(...)
+      - pattern: $SESSION.createQuery(...)
+      - pattern: $SESSION.createSQLQuery(...)
+      - pattern: $SESSION.createFilter(...)
+      - pattern: $MAP.get(...)
+      - pattern: $MAP.getOrDefault(...)
+      - pattern: $MAP.keySet()
+      - pattern: $MAP.values()
+      - pattern: $MAP.entrySet()
+      - patterns:
+          - pattern: $RETURNTYPE $FOO(..., $X, ...){ ... }
+          - focus-metavariable: $X
+    pattern-sinks:
+      - pattern-either:
+          - pattern: java.lang.Runtime.getRuntime().exec(...)
+          - pattern: Runtime.getRuntime().exec(...)
+          - pattern: java.lang.Runtime.exec(...)
+          - pattern: Runtime.exec(...)
+      - pattern-either:
+          - pattern: new java.lang.ProcessBuilder(...).start()
+          - pattern: new ProcessBuilder(...).start()
+          - pattern: new ProcessBuilder(...)
+      - pattern-either:
+          - pattern: new ProcessBuilder().command(...)
+          - pattern: new java.lang.ProcessBuilder().command(...).start()
+          - pattern: new ProcessBuilder().command(...).start()
+      - pattern-either:
+          - pattern: java.lang.ProcessBuilder.startPipeline(...)
+          - pattern: ProcessBuilder.startPipeline(...)
+      - pattern-either:
+          - pattern: org.apache.commons.exec.CommandLine.parse(...)
+          - pattern: CommandLine.parse(...)
+          - pattern: org.apache.commons.exec.DefaultExecutor.execute(...)
+          - pattern: DefaultExecutor.execute(...)
+      - pattern-either:
+          - pattern: org.zeroturnaround.exec.ProcessExecutor.command(...).execute(...)
+          - pattern: ProcessExecutor.command(...).execute(...)
+          - pattern: org.zeroturnaround.exec.ProcessExecutor.start(...)
+          - pattern: ProcessExecutor.start(...)
+      - pattern-either:
+          - pattern-regex: .*\\b(sh|bash)\\b.*-c.*
+          - pattern-regex: .*\\b(cmd\\.exe)\\b.*\\/c.*
+      - pattern-either:
+          - pattern: Runtime.getRuntime().exec($CMDARRAY)
+          - pattern: new ProcessBuilder($ARGS).start()
+    metadata:
+      category: security
+      subcategory:
+        - audit
+        - vuln
+      cwe:
+        - "CWE-77: Improper Neutralization of Special Elements used in a Command
+          ('Command Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - springframework

@@ -1,16 +1,19 @@
 # semgrep_rules
 Set of rules for vulnerability scanning with semgrep. 
 
-## Naming convention
+## Rules Organization Structure
+Rules are stored using [Fluid Attacks](https://db.fluidattacks.com/vul/) tipologies.
 ```
 rules/
-    {LANGUAGE}-[SEARCH|TAINTED|JOIN|DATAFLOW]-{TECHNIQUE}.yaml
-targets/
-    {LANGUAGE}-[SEARCH|TAINTED|JOIN|DATAFLOW]-{TECHNIQUE}.{LANG_EXTENSION}
+    000. Vulnerability Name/
+        LANGUAGE/
+            python-000-Vulnerability-Name.yaml  # SEMGREP RULE
+            python-000-Vulnerability-Name.py    # TESTING CODE FOR THE ABOVE SEMGREP RULE
+
 ```
 
 ## Simple execution
-```
+```bash
 # run a specific rule
 semgrep scan --config path/to/the/rule/rule.yaml -j 30 --metrics off -v --timeout=15
 
@@ -69,5 +72,63 @@ semgrep --config "p/typescript" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/java" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/mobsfscan" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/findsecbugs" -j 30 --metrics off -v --timeout=15
+
+```
+
+## C# Specifics
+
+```yaml
+    # common pattern-sources for csharp
+    pattern-sources:
+      # 1. Function/Method Parameters
+      - pattern-either:
+        - patterns:
+          - pattern: $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: public $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: private $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: protected $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: internal $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+
+      # 2. ASP.NET Request Objects
+      - pattern-either:
+        - pattern: Request.QueryString[$SOURCE]
+        - pattern: Request.QueryString.Get($SOURCE)
+        - pattern: Request.Form[$SOURCE]
+        - pattern: Request.Form.Get($SOURCE)
+        - pattern: Request.Params[$SOURCE]
+        - pattern: Request[$SOURCE]
+        - pattern: Request.Headers[$SOURCE]
+        - pattern: Request.Cookies[$SOURCE]
+        - pattern: Request.ServerVariables[$SOURCE]
+        - pattern: Request.UserHostAddress
+        - pattern: Request.UserAgent
+        - pattern: Request.UrlReferrer
+        - pattern: Request.RawUrl
+        - pattern: Request.Path
+        - pattern: Request.PathInfo
+        - pattern: Request.Url.Query
+        - pattern: Request.HttpMethod
+
+      # 3. ASP.NET Core HttpContext
+      - pattern-either:
+        - pattern: HttpContext.Request.Query[$SOURCE]
+        - pattern: HttpContext.Request.Form[$SOURCE]
+        - pattern: HttpContext.Request.Headers[$SOURCE]
+        - pattern: HttpContext.Request.Cookies[$SOURCE]
+        - pattern: HttpContext.Request.RouteValues[$SOURCE]
+        - pattern: HttpContext.Request.Path
+        - pattern: HttpContext.Request.PathBase
+        - pattern: HttpContext.Request.QueryString
+        - pattern: HttpContext.Request.Body
+        - pattern: HttpContext.Connection.RemoteIpAddress
 
 ```

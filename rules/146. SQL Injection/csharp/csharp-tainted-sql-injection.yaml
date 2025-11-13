@@ -1,0 +1,89 @@
+rules:
+  - id: csharp-tainted-sql-injection
+    languages:
+      - csharp
+    severity: ERROR
+    message: |
+      Semgrep found a possible sql injection vulnerability using taint analysis.
+    mode: taint
+    pattern-sources:
+      # 1. Function/Method Parameters
+      - pattern-either:
+        - patterns:
+          - pattern: $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: public $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: private $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: protected $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+        - patterns:
+          - pattern: internal $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+
+      # 2. ASP.NET Request Objects
+      - pattern-either:
+        - pattern: Request.QueryString[$SOURCE]
+        - pattern: Request.QueryString.Get($SOURCE)
+        - pattern: Request.Form[$SOURCE]
+        - pattern: Request.Form.Get($SOURCE)
+        - pattern: Request.Params[$SOURCE]
+        - pattern: Request[$SOURCE]
+        - pattern: Request.Headers[$SOURCE]
+        - pattern: Request.Cookies[$SOURCE]
+        - pattern: Request.ServerVariables[$SOURCE]
+        - pattern: Request.UserHostAddress
+        - pattern: Request.UserAgent
+        - pattern: Request.UrlReferrer
+        - pattern: Request.RawUrl
+        - pattern: Request.Path
+        - pattern: Request.PathInfo
+        - pattern: Request.Url.Query
+        - pattern: Request.HttpMethod
+
+      # 3. ASP.NET Core HttpContext
+      - pattern-either:
+        - pattern: HttpContext.Request.Query[$SOURCE]
+        - pattern: HttpContext.Request.Form[$SOURCE]
+        - pattern: HttpContext.Request.Headers[$SOURCE]
+        - pattern: HttpContext.Request.Cookies[$SOURCE]
+        - pattern: HttpContext.Request.RouteValues[$SOURCE]
+        - pattern: HttpContext.Request.Path
+        - pattern: HttpContext.Request.PathBase
+        - pattern: HttpContext.Request.QueryString
+        - pattern: HttpContext.Request.Body
+        - pattern: HttpContext.Connection.RemoteIpAddress
+
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              "$SQLSTR" + ...
+          - pattern: |
+              String.Format("$SQLSTR", ...)
+          - patterns: 
+            - pattern: |
+                $"$SQLSTR{$SINK}..."
+            - focus-metavariable: $SINK
+          - pattern: StringBuilder.Append("$SQLSTRING")
+        
+        - metavariable-regex:
+            metavariable: $SQLSTR
+            regex: '[ ]{0,1}(?i)(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|EXEC|filter|clause|condition) .*'
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection

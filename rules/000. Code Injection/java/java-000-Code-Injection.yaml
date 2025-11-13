@@ -1,0 +1,49 @@
+rules:
+  - id: java-000-Code-Injection
+    languages:
+      - java
+    severity: ERROR
+    message: User-controlled input is being used to build or execute program code.
+      This can let an attacker inject arbitrary code or alter application logic.
+      Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern-inside: ScriptEngineManager $FOO = new ScriptEngineManager(); ...
+          - pattern-inside: ScriptEngine $FOO1 = $FOO.getEngineByName("JavaScript"); ...
+          - pattern: $FOO1.eval(...)
+      - patterns:
+          - pattern-inside: GroovyShell $FOO = new GroovyShell(...); ...
+          - pattern: shell.evaluate(...)
+      - patterns:
+          - pattern-inside: ExpressionParser $FOO = new SpelExpressionParser(); ...
+          - pattern: $FOO.parseExpression(...)
+      - patterns:
+          - pattern-inside: OgnlContext $FOO = new OgnlContext(); ...
+          - pattern: $FOO.putAll(...)
+      - patterns:
+          - pattern-inside: JexlEngine $FOO = new JexlBuilder().create(); ...
+          - pattern: $FOO.createExpression(...)
+      - patterns:
+          - pattern-inside: Interpreter $FOO = new Interpreter(); ...
+          - pattern: $FOO.eval(...)
+      - patterns:
+          - pattern: Class.forName(...);
+      - patterns:
+          - pattern-inside: ExpressionFactory $FOO = ExpressionFactory.newInstance(); ...
+          - pattern: $FOO.createValueExpression(...);
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      confidence: LOW
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection

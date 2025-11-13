@@ -1,0 +1,22 @@
+rules:
+  - id: json-236-Technical-Information-Leak-SourceMap
+    languages:
+      - json
+    severity: ERROR
+    message: >
+      The .map files are exposed, making it easy for a malicious actor to
+      analyze the application.
+    pattern-either:
+      - patterns:
+          - pattern: '"sourceMap": true'
+          - pattern-not-inside: |
+              "development": ...
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-540: Inclusion of Sensitive Information in Source Code"
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW

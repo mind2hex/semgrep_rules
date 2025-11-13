@@ -1,0 +1,50 @@
+rules:
+  - id: ruby-404-OS-Command-Injection
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+      modifying sensitive information stored in the machine.
+    mode: taint
+    pattern-sources:
+      - pattern: params[...]
+      - pattern: request.env[...]
+      - pattern: cookies[...]
+      - pattern: headers[...]
+      - pattern: ENV[...]
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              `...`
+      - patterns:
+          - pattern: |
+              %x...
+      - pattern: system(...)
+      - pattern: exec(...)
+      - pattern-either:
+          - pattern: open(...)
+          - pattern: IO.popen(...)
+          - pattern: IO.read(...)
+          - pattern: File.read(...)
+      - pattern: spawn(...)
+      - pattern: Kernel.send(...)
+      - pattern: Open3.capture3(...)
+      - pattern: Open3.popen3(...)
+      - pattern: Open3.pipeline_r(...)
+      - pattern: PTY.spawn(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-78: Improper Neutralization of Special Elements used in an OS
+          Command ('OS Command Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
