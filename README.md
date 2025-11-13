@@ -2,7 +2,7 @@
 Set of rules for vulnerability scanning with semgrep. 
 
 ## Rules Organization Structure
-Rules are stored using [Fluid Attacks](https://db.fluidattacks.com/vul/) tipologies.
+Rules are stored using [Fluid Attacks](https://db.fluidattacks.com/vul/) typologies.
 ```
 rules/
     000. Vulnerability Name/
