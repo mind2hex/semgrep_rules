@@ -86,5 +86,33 @@ rules:
       - patterns:
         - pattern: $RETURNTYPE $FOO(..., $X, ...){ ... }
         - focus-metavariable: $X
+
     pattern-sinks:
-    
+      - patterns:
+        - pattern-either:
+          # string concatenation
+          - pattern-either:
+            - pattern: $VARTYPE $VAR = "$SQLSTR" + $TARGET;
+            - pattern: $VARTYPE $VAR = "$SQLSTR" + $TARGET + ...;
+          - pattern-either:
+            - pattern: String.format("$SQLSTR", ...)
+        - metavariable-regex:
+            metavariable: $SQLSTR
+            regex: "[ ]{0,1}(?i)(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|filter|clause|condition) .*"
+
+    mode: taint
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - flask
+        - django
