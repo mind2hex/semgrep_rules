@@ -29,29 +29,22 @@ rules:
       - pattern: SqlString.escape($X)
       - pattern: connection.escape($X)
       - pattern: validator.escape($X)
-      - patterns:
-        - pattern: $LOGGER.$METHOD(...)
-        - metavariable-regex:
-            metavariable: $LOGGER
-            regex: (?i)(logger|log|logging|debug|logdebug)
-        - metavariable-regex:
-            metavariable: $METHOD
-            regex: (?i)(log|logging|warn|warning|error|err|report|trace|logdebug)
 
     pattern-sinks:
       - patterns:
         - pattern-either:
-          - pattern: $FOO = "$SQLSTR" + ...;
-          - pattern: $FOO = `$SQLSTR${...}`;
-          - pattern: $FOO = `$SQLSTR${...}...`;
-          - pattern: '`$SQLSTR${...}...`;'
-          - pattern: $ORM.query(`$SQLSTR${...}...`);
-          - pattern: return "$SQLSTR" + ...;
-          - pattern: return `$SQLSTR${...}`;
-          - pattern: return `$SQLSTR${...}...`
+          - pattern: |
+              "$SQLSTR" + ...
+          - pattern: |
+              `$SQLSTR${...}`
+          - pattern: |
+              `$SQLSTR${...}...`
+          - pattern: |
+              '`$SQLSTR${...}...`;'
+          - pattern: |
+              $ORM.query(`$SQLSTR${...}...`)
         - pattern-not: $OBJ.$METHOD(`...`,{..., $X, ...});
         - pattern-not: $OBJ.$METHOD(`...`,[..., $X, ...]);
-          
         - metavariable-regex:
             metavariable: $SQLSTR
             regex: '[ ]{0,1}(?i)(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|filter|clause|condition) .*'
