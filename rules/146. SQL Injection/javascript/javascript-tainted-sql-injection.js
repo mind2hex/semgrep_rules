@@ -152,4 +152,7 @@ function foo(data){
 function foo(transactionId){
   // todook: javascript-146-Sql-Injection
   Logger.logDebug(`UploadChargesChannelUse - uploadCharges - ${transactionId}`, '',`INSERT INTO ${transactionId.TABLE_DETECTID_IMAGE_FAKE}`);
+
+  // todook: javascript-146-Sql-Injection
+  console.log('delete action '+transactionId);
 }

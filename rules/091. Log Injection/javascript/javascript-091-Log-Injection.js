@@ -32,8 +32,10 @@ app.post('/login', express.json(), (req, res) => {
 });
 
 // FP EXAMPLE 1: log of a constant
-// EXAMPLE 1: simple log injection
 function foo(arg){
     // ok: javascript-tainted-log-injection
     log.debug("asdas");
+
+    // todook: javascript-tainted-log-injection
+    const response = await login(arg);
 }
