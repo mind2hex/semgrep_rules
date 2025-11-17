@@ -1,0 +1,67 @@
+rules:
+  - id: javascript-021-XPath-Injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: >
+      Dynamic XPath statements are generated without the required data validation
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - pattern: function $FUNC(...)
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  "$LDAPSTR" + ...
+              - pattern: |
+                  `$LDAPSTR${...}`
+              - pattern: |
+                  `$LDAPSTR${...}...`
+              - pattern: |
+                  "$LDAPSTR".concat(...)
+              - pattern: |
+                  $PARTS = ["$LDAPSTR", ...];
+                  ...
+                  $PARTS.join('');
+              - patterns:
+                  - pattern: |
+                      `string($LDAPSTR...)`
+                  - focus-metavariable: $SINK
+              - patterns:
+                  - pattern: |
+                      $TEMPLATE = "$LDAPSTR";
+                      ...
+                      $TEMPLATE.replace(..., $SINK)
+                  - focus-metavariable: $SINK
+              - pattern: $FOO.format("$LDAPSTR", ...)
+          - metavariable-regex:
+              metavariable: $LDAPSTR
+              regex: "[\\/]{2}[a-z]*\\[[\\@]{0,1}[a-z]*[= ><]{0,3}"
+      - pattern: xpath.select(...)
+      - pattern: xpath.select1(...)
+      - pattern: xpath.evaluate(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-90: Improper Neutralization of Special Elements used in an LDAP
+          Query ('LDAP Injection')"
+      confidence: LOW
+      likelihood: LOW
+      impact: MEDIUM
+      owasp:
+        - A3:2021 Injection
