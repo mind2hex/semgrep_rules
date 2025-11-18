@@ -263,3 +263,31 @@ public class RemoteServiceImpl extends UnicastRemoteObject implements RemoteServ
         return "Processed: " + input.toString();
     }
 }
+
+// FP1
+    public static RequestContextType getRequestContextFromEvent(Map<String, Object> event) throws ClassCastException, NullPointerException {
+        RequestContextType requestContext = new RequestContextType();
+
+        @SuppressWarnings("unchecked")
+        // ok: java-096-Insecure-Deserialization
+        Map<String, Object> requestContextClaim = (Map<String, Object>) event.get("requestContext");
+
+        requestContext.setAccountId(requestContextClaim.get("accountId").toString());
+        requestContext.setApiId(requestContextClaim.get("apiId").toString());
+        requestContext.setApiKey(requestContextClaim.get("apiKey").toString());
+        requestContext.setDomainName(requestContextClaim.get("domainName").toString());
+        requestContext.setHttpMethod(requestContextClaim.get("httpMethod").toString());
+        requestContext.setPath(requestContextClaim.get("path").toString());
+        requestContext.setProtocol(requestContextClaim.get("protocol").toString());
+        requestContext.setRequestId(requestContextClaim.get("requestId").toString());
+        requestContext.setRequestTime(requestContextClaim.get("requestTime").toString());
+        requestContext.setResourceId(requestContextClaim.get("resourceId").toString());
+        requestContext.setResourcePath(requestContextClaim.get("resourcePath").toString());
+        requestContext.setSourceIp(requestContextClaim.get("sourceIp").toString());
+        requestContext.setStage(requestContextClaim.get("stage").toString());
+        requestContext.setUserAgent(requestContextClaim.get("userAgent").toString());
+        requestContext.setRequestTimeEpoch(Long.parseLong(requestContextClaim.get("requestTimeEpoch").toString()));
+
+        return requestContext;
+
+    }

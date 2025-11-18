@@ -1,0 +1,18 @@
+rules:
+  - id: csharp-pattern-195-Lack-of-Data-Validation-Headers
+    languages:
+      - csharp
+    message: In the source code the information of some HTTP headers is not being
+      validated, so different values could be injected in order to achieve some
+      XSS attack or compromise the integrity of the stored information.
+    severity: LOW
+    pattern-either:
+      - pattern: |
+          $CONTEXT.Request.ServerVariables["HTTP_X_FORWARDED_FOR"]
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW

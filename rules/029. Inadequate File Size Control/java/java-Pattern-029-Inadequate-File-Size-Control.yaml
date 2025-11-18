@@ -1,0 +1,22 @@
+rules:
+  - id: java-pattern-029-Inadequate-File-Size-Control
+    languages:
+      - java
+    message: The system does not perform an adequate control of the size of the files that can be uploaded to the server.
+    severity: MEDIUM
+    pattern-either:
+      - patterns:
+        - pattern-inside: |
+            @$METHODMAPPING(...)
+            $FUNCTION(...){
+              ...
+            }
+        - pattern: $SOURCE.transferTo(...)
+
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM

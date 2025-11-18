@@ -32,7 +32,6 @@ semgrep --config "p/secrets"
 semgrep --config "p/insecure-transport"
 semgrep --config "p/gitleaks"
 semgrep --config "p/owasp-top-ten"
-semgrep --config "p/misconfigurations"
 ```
 
 ## Javascript/Typescript Specifics
@@ -156,7 +155,11 @@ semgrep --config "p/findsecbugs" -j 30 --metrics off -v --timeout=15
 ```
 
 ## C# Specifics
+```bash # rulesets
+semgrep --config "p/csharp" -j 30 --metrics off -v --timeout=15
+semgrep --config "p/secrets" -j 30 --metrics off -v --timeout=15
 
+```
 ```yaml
     # common pattern-sources for csharp
     pattern-sources:
