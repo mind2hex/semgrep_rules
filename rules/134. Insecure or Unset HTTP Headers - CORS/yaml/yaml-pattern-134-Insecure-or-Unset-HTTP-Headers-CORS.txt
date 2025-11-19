@@ -1,0 +1,4 @@
+# EXAMPLE 1 simple misconfig
+securedApplication:
+  # ruleid: yaml-pattern-134-Insecure-or-Unset-HTTP-headers-CORS
+  allowOrigin: '*'
