@@ -21,10 +21,12 @@ rules:
       - patterns:
           - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
           - focus-metavariable: $SOURCE
+      
     pattern-sanitizers:
       - pattern: SqlString.escape($X)
       - pattern: connection.escape($X)
       - pattern: validator.escape($X)
+      
     pattern-sinks:
       - patterns:
           - patterns:
@@ -57,9 +59,8 @@ rules:
                 
             - metavariable-regex:
                 metavariable: $SQLSTR
-                regex: "[
-                  ]{0,1}(?i)(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|G\
-                  ROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION) .*"
+                regex: 
+                  "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION) .*"
 
             # THIS NEED TO BE IMPROVED, BUT IDK HOW YET..
             - pattern-not-inside: |
