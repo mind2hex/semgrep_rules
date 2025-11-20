@@ -1,0 +1,90 @@
+rules:
+  - id: javascript-tainted-146-Sql-Injection
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      Dynamic SQL statements are generated without the required data validation and without using parameterized statements or stored procedures.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - pattern: function $FUNC(...)
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+    pattern-sanitizers:
+      - pattern: SqlString.escape($X)
+      - pattern: connection.escape($X)
+      - pattern: validator.escape($X)
+    pattern-sinks:
+      - patterns:
+          - patterns:
+            - pattern-either:
+                - pattern: |
+                    "$SQLSTR" + ...
+                - pattern: |
+                    `$SQLSTR${...}...`
+                - pattern: |
+                    $ORM.query(`$SQLSTR${...}...`)
+                - pattern: |
+                    "$SQLSTR".concat(...);
+                - pattern: |
+                    ["$SQLSTR", ..., $SINK, ...]
+                - patterns: 
+                  - pattern-inside: |
+                      $FORMAT = require('string-format');
+                      ...
+                  - pattern:
+                      $FORMAT("$SQLSTR", ...);
+                - patterns:
+                  - pattern-inside: |
+                      $UTIL = require('util');
+                      ...
+                  - pattern: |
+                      $UTIL.format("$SQLSTR", ...);
+
+                - pattern: |
+                    sprintf("$SQLSTR", ...);
+                
+            - metavariable-regex:
+                metavariable: $SQLSTR
+                regex: "[
+                  ]{0,1}(?i)(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|G\
+                  ROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION) .*"
+
+            # THIS NEED TO BE IMPROVED, BUT IDK HOW YET..
+            - pattern-not-inside: |
+                console.$METHOD(...);
+            - pattern-not-inside: |
+                logger.$METHOD(...);
+            - pattern-not-inside: |
+                Logger.$METHOD(...);
+            - pattern-not-inside: |
+                this.log.$METHOD(...);
+            - pattern-not-inside: |
+                this.logger.$METHOD(...);
+          
+          
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs
