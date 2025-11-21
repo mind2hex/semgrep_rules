@@ -1,8 +1,8 @@
 rules:
-  - id: java-091-Log-Injection
+  - id: java-tainted-091-Log-Injection
     languages:
       - java
-    severity: CRITICAL
+    severity: LOW
     message: >
       The system logs entries that contain input from untrusted sources without
       properly validating, sanitizing or escaping their content.
@@ -27,19 +27,6 @@ rules:
         - pattern: $REQUEST.getInputStream()
         - pattern: $REQUEST.getReader()
 
-      # java.sql.ResultSet
-      - pattern-either:
-        - pattern: $RESULT_SET.getString(...)
-        - pattern: $RESULT_SET.getObject(...)
-        - pattern: $RESULT_SET.getInt(...)
-        - pattern: $RESULT_SET.getLong(...)
-        - pattern: $RESULT_SET.getFloat(...)
-        - pattern: $RESULT_SET.getDouble(...)
-        - pattern: $RESULT_SET.getBigDecimal(...)
-        - pattern: $RESULT_SET.getDate(...)
-        - pattern: $RESULT_SET.getTime(...)
-        - pattern: $RESULT_SET.getTimestamp(...)
-
       # org.springframework.web.servlet.mvc.Controller
       - pattern-either:
         - pattern: $REQUEST.getParameter(...)
@@ -47,47 +34,28 @@ rules:
         - pattern: $REQUEST.getParameterMap()
 
       # org.springframework.web.bind.annotation.RequestParam
-      - pattern-either:
-        - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestParam(...) $PARAM, ...) { ... }
+      - patterns:
+        - pattern: |
+            Mono<RestResponse> $METHOD_NAME(..., @RequestParam(...) $PARAM, ...) 
+        - focus-metavariable: $PARAM
 
       # org.springframework.web.bind.annotation.PathVariable
-      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @PathVariable(...) $PARAM, ...) { ... }
+      - patterns:
+        - pattern: |
+            Mono<RestResponse> $METHOD_NAME(..., @PathVariable(...) $PARAM, ...)
+        - focus-metavariable: $PARAM
 
       # org.springframework.web.bind.annotation.RequestBody
-      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestBody $PARAM, ...) { ... }
+      - patterns:
+        - pattern: |
+             Mono<RestResponse> $METHOD_NAME(..., @RequestBody $PARAM, ...)
+        - focus-metavariable: $PARAM
 
       # org.springframework.web.bind.annotation.ModelAttribute
-      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @ModelAttribute(...) $PARAM, ...) { ... }
-
-      # org.springframework.jdbc.core.JdbcTemplate
-      - pattern: $JDBC_TEMPLATE.query(...)
-      - pattern: $JDBC_TEMPLATE.queryForObject(...)
-      - pattern: $JDBC_TEMPLATE.queryForList(...)
-      - pattern: $JDBC_TEMPLATE.queryForMap(...)
-      - pattern: $JDBC_TEMPLATE.queryForRowSet(...)
-      - pattern: $JDBC_TEMPLATE.queryForStream(...)
-      - pattern: $JDBC_TEMPLATE.update(...)
-      - pattern: $JDBC_TEMPLATE.execute(...)
-
-      # javax.persistence.EntityManager
-      - pattern: $ENTITY_MANAGER.createQuery(...)
-      - pattern: $ENTITY_MANAGER.createNativeQuery(...)
-
-      # org.hibernate.Session
-      - pattern: $SESSION.createQuery(...)
-      - pattern: $SESSION.createSQLQuery(...)
-      - pattern: $SESSION.createFilter(...)
-
-      # java.util.Map
-      - pattern: $MAP.get(...)
-      - pattern: $MAP.getOrDefault(...)
-      - pattern: $MAP.keySet()
-      - pattern: $MAP.values()
-      - pattern: $MAP.entrySet()
-
       - patterns:
-        - pattern: $RETURNTYPE $FOO(..., $X, ...){ ... }
-        - focus-metavariable: $X
+        - pattern: |
+            Mono<RestResponse> $METHOD_NAME(..., @ModelAttribute(...) $PARAM, ...)
+        - focus-metavariable: $PARAM
 
     pattern-sinks:
       - patterns:

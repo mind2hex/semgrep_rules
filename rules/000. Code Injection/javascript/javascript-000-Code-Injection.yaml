@@ -1,9 +1,9 @@
 rules:
-  - id: javascript-000-Code-Injection
+  - id: javascript-tainted-000-Code-Injection
     languages:
       - javascript
       - typescript
-    severity: ERROR
+    severity: CRITICAL
     message: >-
       User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
     mode: taint
@@ -18,29 +18,126 @@ rules:
       - patterns:
           - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
           - focus-metavariable: $PARAM
-      - pattern: JSON.parse($ARG)
+    
+    pattern-sanitizers:
+      - pattern: parseInt(...)
+      - pattern: JSON.stringify(...)
+      - pattern: Number(...)
+      - pattern: encodeURIComponent(...)
+      - pattern: Boolean(...)
+      - pattern: parseFloat(...)
+      - pattern: validator.isInt(...)
+      - pattern: DOMPurify.sanitize(...)
+
     pattern-sinks:
+      
+      # simple eval
       - pattern: eval(...)
-      - pattern: new Function(..., $INPUT);
+
+      # Function constructor
       - patterns:
-          - pattern: new Function(..., `$INPUT`);
-          - focus-metavariable: $INPUT
+        - pattern-either:
+          - pattern: new Function(..., $SINK);
+          - pattern: Function(..., $SINK);
+          - pattern: new Object.getPrototypeOf(function(){}).constructor(..., $SINK)
+          - pattern: Object.getPrototypeOf(function(){}).constructor(..., $SINK)
+          - pattern: new (async function(){}).constructor.constructor(..., $SINK)
+          - pattern: (async function(){}).constructor.constructor(..., $SINK)
+        - focus-metavariable: $SINK
+      
+      # vm module (Node.js)
       - patterns:
-          - pattern: $SETFUNCTION($INPUT, ...);
-          - metavariable-regex:
-              metavariable: $SETFUNCTION
-              regex: (setInterval|setImmediate|setTimeout)
-          - focus-metavariable: $INPUT
+        - pattern-either:
+          - pattern: |
+              $VM.runInThisContext(...)
+          - pattern: |
+              $VM.runInNewContext(...)
+          - pattern: |
+              $VM.runInContext(...)
+          - pattern: |
+              $VM.Script(...)
+          - pattern: |
+              new $VM.Script(...)
+
+      # dynamic import
       - patterns:
-          - pattern: $OBJ.innerHTML = $SINK
-          - focus-metavariable: $SINK
+        - pattern-either:
+          - pattern: |
+              require(...)
+          - pattern: |
+              import(...)
+      
+      # web assembly
       - patterns:
-          - pattern: $OBJ.setAttribute(..., $SINK)
-          - focus-metavariable: $SINK
-      - pattern: document.write(...)
-      - pattern: document.body.insertAdjacentHTML(...)
-      - pattern: document.createElement(...)
-      - pattern: window.location = ...
+        - pattern-either:
+          - pattern: |
+              WebAssembly.instantiate(...)
+          - pattern: |
+              WebAssembly.compile(...)
+
+      # Worker threads con eval-like behavior
+      - patterns:
+        - pattern-either:
+            - pattern: |
+                new Worker(..., { eval: true })
+
+      # Timer functions con strings (code injection)
+      - patterns:
+        - pattern-either:
+          - pattern: setTimeout($SINK, ...)
+          - pattern: setInterval($SINK, ...)
+          - pattern: setImmediate($SINK)
+        - pattern-not: |
+            setTimeout($FUNCTION(...), ...)
+        - pattern-not: |
+            setInterval($FUNCTION(...), ...)
+        - focus-metavariable: $SINK
+
+      # GeneratorFunction
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              $FOO = (function*(){}).constructor;
+              ...
+              $FOO(..., $SINK)
+
+          - pattern: |
+              $FOO = (function*(){}).constructor;
+              ...
+              new $FOO(..., $SINK);
+              
+          - pattern: |
+              $FOO = Object.getPrototypeOf(function*(){}).constructor;
+              ...
+              $FOO(..., $SINK)
+          
+          - pattern: |
+              $FOO = Object.getPrototypeOf(function*(){}).constructor;
+              ...
+              new $FOO(..., $SINK)
+        - focus-metavariable: $SINK
+
+      # AsyncGeneratorFunction
+      - patterns:
+        - pattern-either:
+          - pattern: (async function*(){}).constructor(...)
+          - pattern: new (async function*(){}).constructor(...)
+
+      - patterns:        
+        - pattern: |
+            $REPL = require('repl');
+            ...
+            $REPLSRV = $REPL.start();
+            ...
+            $REPLSRV.eval($SINK, ...)
+        - focus-metavariable: $SINK
+
+
+      # Constructor chains
+      - pattern: $OBJ.constructor.constructor(...)
+      - pattern: (()=>{}).constructor.constructor(...)
+      - pattern: ({}).constructor.constructor(...)
+ 
     metadata:
       category: security
       subcategory:

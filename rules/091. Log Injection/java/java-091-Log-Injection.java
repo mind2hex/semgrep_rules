@@ -7,3 +7,10 @@ public Mono<RestResponse> foo(@Valid @RequestBody RestRequest requestBody, Authe
     log.info("logging requestBody: {}", requestBody);
     return bar;
 }
+
+
+public FooResponse foo(FooObject foo, FooObject bar) {
+    // modification to avoid false positives
+    // ok: java-tainted-log-injection
+    log.info("logging requestBody: {}", foo);
+}

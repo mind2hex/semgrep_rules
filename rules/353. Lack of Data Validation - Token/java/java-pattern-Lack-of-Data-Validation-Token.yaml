@@ -1,0 +1,20 @@
+rules:
+  - id: java-pattern-353-Lack-of-Data-Validation-Token
+    languages:
+      - java
+    severity: MEDIUM
+    message: >
+      The generated JWT access token does not validate if the signature is valid
+      so the token can be modified and requests are accepted; even removing the
+      signature from the token works.
+    pattern-either:
+      - pattern: JWT.decode(...);
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-347: Improper Verification of Cryptographic Signature"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
