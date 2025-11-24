@@ -1,0 +1,20 @@
+rules:
+  - id: json-pattern-134-Insecure-or-Unset-HTTP-headers-CORS
+    languages:
+      - json
+    severity: ERROR
+    message: >
+      The cross-domain policy includes wildcards, accepting any domain as valid
+      for sharing resources..
+    pattern-either:
+      - pattern: |
+          "Access-Control-Allow-Origin": "*"
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-942: Permissive Cross-domain Policy with Untrusted Domains"
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW

@@ -1,0 +1,27 @@
+rules:
+  - id: javascript-pattern-009-Sensitive-Information-in-Source-Code
+    languages:
+      - javascript
+      - typescript
+    severity: INFO
+    message: The source code repository contains sensitive information such as
+      usernames, passwords, email addresses and IP addresses, among others.
+      Alternatively, while values may be password=123 o aws.secret_key=test,
+      they reveal the bad practice of storing sensitive information in the
+      repository with no encryption, and sooner or later they can be replaced
+      for real sensitive values.
+    pattern-either:
+      - patterns:
+        - pattern-inside: |
+            $FOO = {
+              ...
+            }
+        - pattern-either:
+          - pattern: |
+              user: ...
+          - pattern: |
+              password: ...
+          - pattern: |
+              database: ...
+          - pattern: |
+              server: ...
