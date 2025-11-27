@@ -1,0 +1,35 @@
+rules:
+  - id: csharp-tainted-000-Code-Injection
+    languages:
+      - csharp
+    severity: HIGH
+    message: User-controlled input is being used to build or execute program code.
+      This can let an attacker inject arbitrary code or alter application logic.
+      Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: $RETURNTYPE $FOO(..., $SOURCE, ...){ ... }
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern-inside: CSharpCodeProvider $FOO = new CSharpCodeProvider(); ...
+          - pattern: $FOO.CompileAssemblyFromSource(...)
+      - patterns:
+          - pattern: CSharpScript.EvaluateAsync(...)
+      - patterns:
+          - pattern-inside: ScriptEngine $FOO = $ENGINE.CreateEngine(); ...
+          - pattern: $FOO.Execute(...)
+      - patterns:
+          - pattern: Activator.CreateInstance(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection

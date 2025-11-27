@@ -1,0 +1,91 @@
+rules:
+  - id: python-tainted-000-Code-Injection
+    languages: 
+      - python
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    pattern-sources:
+      # request object 
+      - patterns:
+          - pattern: request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (GET|POST|body|path|path_info|content_params|query_params|data|FILES|META|headers|COOKIES|args|form|files|values|json|get_json|cookies|view_args|path_params|file|state|params|matchdict|json_body|query|forms|get_data)
+
+      # request object 2
+      - patterns:
+          - pattern: self.request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (arguments|query_arguments|body_arguments|files|path_args|path_kwargs|headers|cookies)
+      
+      # tornado
+      - pattern: self.get_argument(...)
+      
+      # function params
+      - patterns:
+          - pattern: |
+              def $FOO(..., $X, ...):
+                ...
+          - focus-metavariable: $X
+
+    pattern-sinks:
+      # direct sinks
+      - pattern-either:
+        - pattern: eval(...)
+        - pattern: exec(...)
+        - pattern: compile(...)
+        - pattern: importlib.import_module(...)
+        - pattern: importlib.util.spec_from_file_location(...)
+        - pattern: importlib.util.module_from_spec(...)
+        - pattern: __import__(...)
+        - pattern: simple_eval(...)
+
+      # getattr
+      - patterns: 
+        - pattern: getattr(..., $SINK)
+        - focus-metavariable: $SINK
+
+      # pandas.df.eval
+      - patterns: 
+          - pattern: |
+              $FOO = pandas.DataFrame(...)
+              ...
+          - pattern: $FOO.eval(...)
+
+      # timeit.timeit
+      - patterns: 
+        - pattern: timeit.timeit($SINK, ...)
+        - focus-metavariable: $SINK
+
+      # aeval
+      - patterns:
+        - pattern-inside: |
+            $AEVAL = Interpreter()
+            ...
+        - pattern: $AEVAL(...)
+
+      # py_mini_racer
+      - patterns:
+        - pattern-inside: |
+            $CTX = py_mini_racer.MiniRacer()
+            ...
+        - pattern: $CTX.eval(...)
+
+      - patterns:
+        - pattern-inside: |
+            $SPEC = importlib.util.spec_from_file_location()
+              
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection

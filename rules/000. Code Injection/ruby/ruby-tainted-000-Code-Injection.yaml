@@ -1,10 +1,10 @@
 rules:
-  - id: ruby-000-Code-Injection
+  - id: ruby-tainted-000-Code-Injection
     languages:
       - ruby
-    severity: ERROR
+    severity: HIGH
     message: >-
-      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.    mode: taint
     mode: taint
     pattern-sources:
       - patterns:
@@ -26,3 +26,15 @@ rules:
       - pattern: $FOO.method(...).call
       - pattern: load ...
       - pattern: require ...
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection

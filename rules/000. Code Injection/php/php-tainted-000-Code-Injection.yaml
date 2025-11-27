@@ -1,0 +1,60 @@
+rules:
+  - id: php-tainted-000-Code-Injection
+    languages:
+      - php
+    severity: HIGH
+    message: User-controlled input is being used to build or execute program code.
+      This can let an attacker inject arbitrary code or alter application logic.
+      Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    pattern-sources:
+      # HTTP ENDPOINTS SOURCES
+      - pattern-either:
+        - pattern: |
+            $_GET[...]
+        - pattern: |
+            $_POST[...]
+
+      # FUNCTION PARAMS SOURCES
+      - patterns:
+        - focus-metavariable: $SOURCE
+        - pattern: |
+            function $FOO(..., $SOURCE, ...){...}
+
+    pattern-sinks:
+      - pattern-either:
+        - pattern: eval(...)
+        - pattern: assert(...)
+        # preg_replace('/.../e', $TAINTED, ...)
+        - pattern: preg_replace(...)
+
+      - patterns:
+        - pattern: create_function(..., $SINK)
+        - focus-metavariable: $SINK
+
+      - patterns: 
+        - pattern-either:
+          - pattern: runkit_function_add(..., $SINK)
+          - pattern: runkit7_function_add(..., $SINK)
+          - pattern: runkit_function_redefine(..., $SINK)
+        - focus-metavariable: $SINK
+
+      - patterns:
+        - pattern-inside: |
+            $LANG = new ExpressionLanguage();
+            ...
+        - pattern: |
+            $LANG->evaluate($SINK, ...)
+        - focus-metavariable: $SINK
+    
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection

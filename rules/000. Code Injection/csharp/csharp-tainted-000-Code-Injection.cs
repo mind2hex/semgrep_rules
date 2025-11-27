@@ -21,7 +21,7 @@ public class DynamicCompiler{
         CompilerParameters parameters = new CompilerParameters();
         parameters.GenerateInMemory = true;
         parameters.GenerateExecutable = false;
-        // ruleid: csharp-000-Code-Injection
+        // ruleid: csharp-tainted-000-Code-Injection
         CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
         
         var assembly = results.CompiledAssembly;
@@ -46,7 +46,7 @@ public class ScriptEvaluator{
         var options = ScriptOptions.Default
             .AddReferences(typeof(System.Linq.Enumerable).Assembly)
             .AddImports("System", "System.Linq", "System.IO");
-        // ruleid: csharp-000-Code-Injection       
+        // ruleid: csharp-tainted-000-Code-Injection       
         var result = await CSharpScript.EvaluateAsync(script, options);
         return result;
     }
@@ -69,7 +69,7 @@ public class PythonScriptEngine
         
         // Exponer tipos .NET al script
         scope.SetVariable("clr", engine.GetClrModule());
-        // ruleid: csharp-000-Code-Injection       
+        // ruleid: csharp-tainted-000-Code-Injection      
         var result = engine.Execute(pythonCode, scope);
         return result;
     }
@@ -90,7 +90,7 @@ public class ObjectFactory
         if (type != null)
         {
             // Vulnerable: instancia cualquier tipo con cualquier constructor
-            // ruleid: csharp-000-Code-Injection  
+            // ruleid: csharp-tainted-000-Code-Injection  
             return Activator.CreateInstance(type, constructorArgs);
         }
         

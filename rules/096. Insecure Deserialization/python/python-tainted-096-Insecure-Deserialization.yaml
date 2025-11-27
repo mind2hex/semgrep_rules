@@ -1,0 +1,55 @@
+rules:
+  - id: python-tainted-096-Insecure-Deserialization
+    languages:
+      - python
+    severity: HIGH
+    message: >
+      The system deserializes objects without first validating their content nor
+      casting them to a specific type.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (GET|POST|body|path|path_info|content_params|query_params|data|FILES|META|headers|COOKIES|args|form|files|values|json|get_json|cookies|view_args|path_params|file|state|params|matchdict|json_body|query|forms|get_data)
+      - patterns:
+          - pattern: self.request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (arguments|query_arguments|body_arguments|files|path_args|path_kwargs|headers|cookies)
+      - pattern: self.get_argument(...)
+      - patterns:
+          - pattern: |
+              def $FOO(..., $X, ...):
+                ...
+          - focus-metavariable: $X
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: pickle.$METHOD(...)
+              - pattern: _pickle.$METHOD(...)
+              - pattern: joblib.$METHOD(...)
+              - pattern: numpy.$METHOD(..., allow_pickle=True)
+              - pattern: marshal.$METHOD(...)
+              - pattern: yaml.$METHOD(...)
+              - pattern: dill.$METHOD(...)
+              - pattern: cloudpickle.$METHOD(...)
+              - pattern: torch.$METHOD(...)
+              - pattern: dill.$METHOD(...)
+              - pattern: shelve.open(...)
+              - pattern: jsonpickle.decode(...)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (load|loads|unsafe_load)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-502: Deserialization of Untrusted Data"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A8:2017 Insecure Deserialization
