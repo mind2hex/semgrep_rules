@@ -1,0 +1,19 @@
+rules:
+  - id: java-pattern-138-Innapropiate-Coding-Practices
+    languages:
+      - java
+    severity: LOW
+    message: Potentially unsafe coding practice detected. This pattern may lead to
+      unexpected behavior or security weaknesses.
+    patterns:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  this.$FOO.$STRINGCPM($FOO)
+              - pattern: |
+                  $FOO.$STRINGCPM($FOO)
+          - metavariable-regex:
+              metavariable: $STRINGCPM
+              regex: (equals|equalsIgnoreCase|compareTo|compareToIgnoreCase)
+    metadata:
+      category: correctness
