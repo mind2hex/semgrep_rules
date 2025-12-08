@@ -1,11 +1,12 @@
 rules:
-  - id: java-096-Insecure-Deserialization
+  - id: java-tainted-096-Insecure-Deserialization
     languages:
       - java
     message: The system deserializes objects without first validating their content
       nor casting them to a specific type.
     severity: CRITICAL
     mode: taint
+
     pattern-sources:
       - pattern-either:
           - patterns:
@@ -52,44 +53,73 @@ rules:
           - pattern: HttpContext.Request.QueryString
           - pattern: HttpContext.Request.Body
           - pattern: HttpContext.Connection.RemoteIpAddress
+
     pattern-sinks:
-      - pattern: new ObjectInputStream(...);
-      - pattern: new XMLDecoder(...);
-      - patterns:
-          - pattern-inside: Kryo $KRYO = new Kryo(); ...
-          - pattern: $KRYO.readClassAndObject(...)
-      - patterns:
-          # need improvement
-          - pattern-inside: ObjectMapper $MAPPER = new ObjectMapper(); ...
-          # - pattern-inside: $MAPPER.enableDefaultTyping(); ...
-          - pattern: $MAPPER.readValue(..., Object.class)
-      - patterns:
-          - pattern-inside: XStream $XSTREAM = new XStream(); ...
-          - pattern: $XSTREAM.fromXML(...)
-      - patterns:
-          - pattern-inside: Yaml $YAML = new Yaml(); ...
-          - pattern: $YAML.load(...)
-      - patterns: 
-          # tofix
-          - pattern-inside: |
-              {
+        # https://pentesterlab.com/exercises/cve-2023-25x4x
+        - patterns:
+            - pattern-inside: |
+                $IC = new InitialContext(...);
                 ...
-                ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+            - pattern: |
+                $IC.lookup($SINK);
+            - focus-metavariable: $SINK
+
+        # https://pentesterlab.com/exercises/cve-2023-4504x
+        - patterns:
+            - pattern: new ObjectInputStream(...);
+        
+        # XMLDecoder
+        - patterns:
+            - pattern: new XMLDecoder(...);
+        
+        # Kyro default
+        - patterns:
+            - pattern-inside: Kryo $KRYO = new Kryo(); ...
+            - pattern: $KRYO.readClassAndObject(...)
+
+        # Jackson con enableDefaultTyping
+        # https://fasterxml.github.io/jackson-databind/javadoc/2.9/com/fasterxml/jackson/databind/ObjectMapper.DefaultTyping.html
+        - patterns:
+            # need improvement
+            - pattern-inside: |
+                ObjectMapper $MAPPER = new ObjectMapper(); 
                 ...
-              }
-          - pattern: JSON.parse(...);
-      - pattern: TypeToken.get(...).getType();
-      - pattern: Map $MAP = (Map) ...;
-      - pattern: new HessianInput(...);
-      - pattern: Marshalling.createByteInput(...);
+                $MAPPER.enableDefaultTyping(...);
+                ...
+            - pattern: mapper.readValue($SINK, Object.class);
+            - focus-metavariable: $SINK
+
+        # XStream
+        - patterns:
+            - pattern-inside: XStream $XSTREAM = new XStream(); ...
+            - pattern: $XSTREAM.fromXML(...)
+
+        - patterns:
+            - pattern-inside: Yaml $YAML = new Yaml(); ...
+            - pattern: $YAML.load(...)
+
+        - patterns: 
+            # tofix
+            - pattern-inside: |
+                {
+                    ...
+                    ParserConfig.getGlobalInstance().setAutoTypeSupport(true);
+                    ...
+                }
+            - pattern: JSON.parse(...);
+
+        - pattern: TypeToken.get(...).getType();
+        - pattern: new HessianInput(...);
+        - pattern: Marshalling.createByteInput(...);
+        
     metadata:
-      category: security
-      subcategory:
-        - vuln
-      cwe:
-        - "CWE-502: Deserialization of Untrusted Data"
-      confidence: LOW
-      likelihood: LOW
-      impact: HIGH
-      owasp:
-        - A8:2017 Insecure Deserialization
+        category: security
+        subcategory:
+            - vuln
+        cwe:
+            - "CWE-502: Deserialization of Untrusted Data"
+        confidence: LOW
+        likelihood: LOW
+        impact: HIGH
+        owasp:
+            - A8:2017 Insecure Deserialization

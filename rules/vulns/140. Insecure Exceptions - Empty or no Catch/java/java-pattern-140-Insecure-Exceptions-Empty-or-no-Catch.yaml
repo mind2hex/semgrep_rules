@@ -1,0 +1,13 @@
+rules:
+  - id: java-pattern-140-Insecure-Exceptions-Empty-or-no-Catch
+    languages:
+      - java
+    message: The application does not perform proper exception handling. Empty
+      _catch_ statements are found, or _try_ statements without their respective
+      _catch_. This behavior can make the application temporarily or permanently
+      unavailable by presenting errors that are not being handled.
+    severity: LOW
+    pattern: |
+      try{...}catch(...){}
+    metadata:
+      category: best-practice

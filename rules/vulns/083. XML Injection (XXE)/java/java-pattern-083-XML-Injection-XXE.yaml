@@ -1,0 +1,37 @@
+rules:
+  - id: java-pattern-083-XML-Injection-XXE
+    languages:
+      - java
+    message: It is possible to inject XML code into the application's requests,
+      which is then interpreted by the server. This could allow an attacker to
+      perform data exfiltration or execute commands remotely.
+    severity: HIGH
+    pattern-either:
+      - pattern: XMLReaderFactory.createXMLReader();
+      - patterns:
+        - pattern-inside: |
+            $DBF = DocumentBuilderFactory.newInstance();
+            ...
+        - pattern: |
+            $DB = $DBF.newDocumentBuilder();
+        - pattern-not-inside: |
+            $DBF.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            ...
+        - pattern-not-inside: |
+            $DBF.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            ...
+        - pattern-not-inside: |
+            $DBF.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            ...
+        - pattern-not-inside: |
+            $DBF.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            ...
+        - pattern-not-inside: |
+            $DBF.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            ...
+        - pattern-not-inside: |
+            $DBF.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            ...
+        - pattern-not-inside: |
+            setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+            ...
