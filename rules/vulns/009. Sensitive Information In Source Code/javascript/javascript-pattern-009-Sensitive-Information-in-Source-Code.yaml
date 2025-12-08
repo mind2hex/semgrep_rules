@@ -16,12 +16,10 @@ rules:
             $FOO = {
               ...
             }
-        - pattern-either:
-          - pattern: |
-              user: ...
-          - pattern: |
-              password: ...
-          - pattern: |
-              database: ...
-          - pattern: |
-              server: ...
+        - pattern: |
+            $STR: "..."
+        - pattern-not: |
+            $STR: {...} 
+        - metavariable-regex:
+            metavariable: $STR
+            regex: (user|username|pass|password|database|server)

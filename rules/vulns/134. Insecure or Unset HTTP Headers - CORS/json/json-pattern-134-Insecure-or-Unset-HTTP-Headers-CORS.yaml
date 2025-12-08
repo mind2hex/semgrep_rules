@@ -1,14 +1,23 @@
 rules:
-  - id: yaml-pattern-134-Insecure-or-Unset-HTTP-headers-CORS
+  - id: json-pattern-134-Insecure-or-Unset-HTTP-headers-CORS
     languages:
-      - yaml
+      - json
     severity: ERROR
     message: >
       The cross-domain policy includes wildcards, accepting any domain as valid
       for sharing resources..
     pattern-either:
       - pattern: |
-          allowOrigin: '*'
+          "Access-Control-Allow-Origin": "*"
+      - patterns: 
+        - pattern-inside: |
+            "headers": ...
+        - pattern: |
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            }
+
     metadata:
       category: security
       subcategory:

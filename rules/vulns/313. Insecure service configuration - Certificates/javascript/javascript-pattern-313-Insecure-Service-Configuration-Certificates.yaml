@@ -1,0 +1,16 @@
+rules:
+  - id: javascript-pattern-313-Insecure-Service-Configuration-Certificates
+    languages:
+      - javascript
+      - typescript
+    severity: INFO
+    message: |
+      The use of insecure options that disable certificate verification is found, which can facilitate MitM attacks.
+    pattern-either:
+      - patterns:
+        - pattern-inside: |
+            {
+              ...
+            }
+        - pattern: |
+            rejectUnauthorized: false

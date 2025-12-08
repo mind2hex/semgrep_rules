@@ -1,0 +1,36 @@
+rules:
+  - id: javascript-anonymous-http-endpoints
+    message: |
+      Endpoint anónimo detectado: Este endpoint no tiene guards de autenticación configurados.
+      
+      RIESGO DE SEGURIDAD:
+      - El endpoint es accesible sin autenticación
+      - Cualquier usuario puede invocar este método
+      
+      RECOMENDACIONES:
+      1. Si el endpoint debe ser público, marca explícitamente con @Public()
+      2. Si requiere autenticación, añade @UseGuards(AuthGuard) o similar
+      3. Revisa si debe tener autorización adicional (@Roles(), @Permissions(), etc.)
+    languages:
+      - typescript
+    severity: WARNING
+    pattern-either:
+      - patterns:
+        - pattern: |
+            @$HTTPMETHOD(...)
+            $FUNCTION(...) { ... }
+        - pattern-not: |
+            @$HTTPMETHOD(...)
+            @Authenticated()
+            $FUNCTION(...) { ... }
+            
+        - metavariable-regex:
+            metavariable: $HTTPMETHOD
+            regex: (Get|Post|Put|Delete|Patch)
+            
+    metadata:
+      category: security
+      subcategory: authentication
+      cwe: "CWE-306: Missing Authentication for Critical Function"
+      owasp: "A01:2021 - Broken Access Control"
+      confidence: HIGH

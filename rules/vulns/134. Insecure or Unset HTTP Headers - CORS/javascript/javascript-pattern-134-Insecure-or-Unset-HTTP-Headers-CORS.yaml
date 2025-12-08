@@ -1,0 +1,25 @@
+rules:
+  - id: javascript-pattern-134-Insecure-or-Unset-HTTP-headers-CORS
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: >
+      The cross-domain policy includes wildcards, accepting any domain as valid
+      for sharing resources..
+    pattern-either:
+      - patterns:
+        - pattern-inside: |
+            cors: {...}
+        - pattern: |
+            origin: '*'
+
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-942: Permissive Cross-domain Policy with Untrusted Domains"
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW

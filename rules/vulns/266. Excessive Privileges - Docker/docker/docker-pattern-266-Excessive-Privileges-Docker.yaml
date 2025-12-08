@@ -1,0 +1,26 @@
+rules:
+  - id: docker-pattern-266-Excessive-Privileges-Docker
+    languages:
+      - docker
+    severity: INFO
+    message: The containers executed in the application do not properly restrict the
+      privileges of the users, executing tasks with root user instead of a
+      custom user.
+    pattern-either:
+      - patterns:
+          - pattern-not-inside: |
+              USER $USER
+              ...
+          - pattern: |
+              CMD ...
+      - patterns:
+          - pattern-inside: |
+              USER root
+              ...
+          - pattern: |
+              CMD ...
+    metadata:
+      category: best-practice
+      technology:
+        - dockerfile
+      source_rule_url: https://www.docker.com/blog/understanding-the-docker-user-instruction/#best-practices

@@ -1,0 +1,45 @@
+rules:
+  - id: generic-pattern-211-Asymmetric-denial-of-service-ReDoS
+    languages:
+      - generic
+    severity: LOW
+    message: Within the source code there is evidence of the use of dangerous
+      regular expressions, because they make use of complex operations to find
+      matches, which can lead to an attacker sending a specific string of data
+      that could cause the server to crash when evaluating the string with the
+      dangerous regular expression.
+    patterns:
+      - pattern-either:
+        - pattern-inside: r"..."
+        - pattern-inside: ^...$
+      - pattern-either:
+          # Cuantificadores anidados directos: ++, **, *+, +*
+          - pattern-regex: '(\*\+|\+\*|\+\+|\*\*)'
+          # Cuantificadores con llaves anidados
+          - pattern-regex: '(\{\d+,\}\+|\{\d+,\}\*|\+\{\d+,\}|\*\{\d+,\})'
+          # Grupos con cuantificadores seguidos de más cuantificadores: (x+)+
+          - pattern-regex: '\([^)]*[\*\+]\s*\)[*+]'
+          - pattern-regex: '\([^)]*[\*\+]\s*\)\{'
+          # Alternancia con cuantificadores externos: (a|b)+
+          - pattern-regex: '\([^)]*\|[^)]*\)[\*\+]'
+          # Múltiples cuantificadores dentro de un grupo seguido de cuantificador
+          - pattern-regex: '\([^)]*[\*\+][^)]*[\*\+][^)]*\)[\*\+]'
+          # Wildcards con cuantificadores: .**, .+*, .*+, .++
+          - pattern-regex: '\.[\*\+][\+\*]'
+          # Opcionales repetidos: (a?)+, (a?)*
+          - pattern-regex: '\([^)]*\?\s*\)[\+\*]'
+          - pattern-regex: '\([^)]*\?\s*\)\{'
+      # Excluir patrones seguros comunes
+      - pattern-not-regex: '^\s*/\^[^(]*\$/'
+      - pattern-not-regex: 'base64|Base64|BASE64'
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-1333: Inefficient Regular Expression Complexity"
+      confidence: LOW
+      likelihood: LOW
+      impact: MEDIUM
+      owasp:
+        - A4:2021 Insecure Design

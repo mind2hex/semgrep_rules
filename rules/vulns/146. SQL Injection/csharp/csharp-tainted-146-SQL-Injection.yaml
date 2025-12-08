@@ -1,10 +1,10 @@
 rules:
-  - id: csharp-tainted-sql-injection
+  - id: csharp-tainted-146-SQL-Injection
     languages:
       - csharp
-    severity: ERROR
+    severity: CRITICAL
     message: |
-      Semgrep found a possible sql injection vulnerability using taint analysis.
+      Dynamic SQL statements are generated without the required data validation and without using parameterized statements or stored procedures.
     mode: taint
     pattern-sources:
       # 1. Function/Method Parameters
@@ -58,6 +58,11 @@ rules:
         - pattern: HttpContext.Request.Body
         - pattern: HttpContext.Connection.RemoteIpAddress
 
+    pattern-sanitizers:
+      - pattern: SqlString.escape(...)
+      - pattern: connection.escape(...)
+      - pattern: validator.escape(...)
+      - pattern: $FOO.FromSqlInterpolated(...)
     pattern-sinks:
       - patterns:
         - pattern-either:
@@ -74,7 +79,7 @@ rules:
         - metavariable-regex:
             metavariable: $SQLSTR
             regex: 
-              "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION) .*"
+              "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
 
     metadata:
       category: security

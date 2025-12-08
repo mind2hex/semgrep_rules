@@ -5,10 +5,10 @@ Set of rules for vulnerability scanning with semgrep.
 Rules are stored using [Fluid Attacks](https://db.fluidattacks.com/vul/) typologies.
 ```
 rules/
-    000. Vulnerability Name/
+    000. Typology/
         LANGUAGE/
-            python-000-Vulnerability-Name.yaml  # SEMGREP RULE
-            python-000-Vulnerability-Name.py    # TESTING CODE FOR THE ABOVE SEMGREP RULE
+            language-mode-000-typology.yaml   # SEMGREP RULE
+            language-mode-000-typology.ext    # TESTING CODE FOR THE ABOVE SEMGREP RULE
 
 ```
 
@@ -23,6 +23,7 @@ semgrep scan --config path/to/the/rule/injections/command_injection/ -j 30 --met
 
 # Semgrep Registry General Rulesets
 ```bash
+semgrep --config "p/owasp-top-ten"
 semgrep --config "p/security-audit"
 semgrep --config "p/r2c-security-audit"
 semgrep --config "p/sql-injection"
@@ -31,7 +32,6 @@ semgrep --config "p/jwt"
 semgrep --config "p/secrets"
 semgrep --config "p/insecure-transport"
 semgrep --config "p/gitleaks"
-semgrep --config "p/owasp-top-ten"
 ```
 
 ## Javascript/Typescript Specifics

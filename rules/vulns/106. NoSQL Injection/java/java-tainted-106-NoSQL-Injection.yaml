@@ -1,0 +1,60 @@
+rules:
+  - id: java-tainted-106-NoSQL-Injection-DynamoDB
+    languages:
+      - java
+    severity: MEDIUM
+    message: >-
+      A **user-controlled** value is flowing into a DynamoDB expression API
+      (Expression.expression(..), Expression.expressionValues(..),
+      Expression.expressionNames(..)). These methods allow arbitrary filter or
+      condition expressions, and passing untrusted input into them can lead to
+      NoSQL injection, enabling attackers to alter query conditions or produce
+      unexpected results.
+
+      To remediate, never concatenate strings or insert raw user input into
+      expression strings or expression maps. Always use placeholder values
+      (e.g., :val, #name) and bind them using the AttributeValue builder or safe
+      mappings.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: public $FUNC(..., $SOURCE, ...){...}
+          - focus-metavariable: $SOURCE
+    pattern-sanitizers:
+      - pattern: AttributeValue.builder().s(...)
+      - pattern: AttributeValue.fromS(...)
+      - pattern: QueryEnhancedRequest.builder().queryConditional(...)
+      - pattern: $FOO.withPrimaryKey(...)
+    pattern-sinks:
+      - pattern: $EB.expressionValues(...)
+      - pattern: $EB.expressionNames(...)
+      - pattern: $REQ.filterExpression(...)
+      - pattern: $REQ.projectionExpression(...)
+      - pattern: $SERB.filterExpression(...)
+      - pattern: $QRB.filterExpression(...)
+      - pattern: $QRB.keyConditionExpression(...)
+      - pattern: $QRB.projectionExpression(...)
+      - pattern: $SRB.filterExpression(...)
+      - pattern: $SRB.projectionExpression(...)
+      - pattern: $UITB.updateExpression(...)
+      - pattern: $DIRB.conditionExpression(...)
+      - pattern: $GIRB.projectionExpression(...)
+      - pattern: $REQ.withFilterExpression(...)
+      - pattern: $REQ.withKeyConditionExpression(...)
+      - pattern: $REQ.withProjectionExpression(...)
+      - pattern: $REQ.withUpdateExpression(...)
+      - pattern: $REQ.withConditionExpression(...)
+    pattern-propagators:
+      - pattern: $TO.put(..., $FROM)
+        from: $FROM
+        to: $TO
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-943: Improper Neutralization of Special Elements in Data Query
+          Logic"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM

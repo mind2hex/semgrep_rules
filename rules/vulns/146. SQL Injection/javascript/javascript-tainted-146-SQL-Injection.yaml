@@ -61,7 +61,7 @@ rules:
           - metavariable-regex:
               metavariable: $SQLSTR
               regex: 
-                "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION) .*"
+                "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
 
           # THIS NEED TO BE IMPROVED, BUT IDK HOW YET..
           - pattern-not-inside: |
@@ -75,7 +75,22 @@ rules:
           - pattern-not-inside: |
               this.logger.$METHOD(...);
           
-          
+      # TESTING DIRECT SINKS
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              await $FOO.oneOrNone<RETURNTYPE>($SINK, ...)
+          - pattern: |
+              await $FOO.oneOrNone($SINK, ...)
+
+          - pattern: |
+              await $FOO.any<$RETURNTYPE>($SINK, ...)
+          - pattern: |
+              await $FOO.any($SINK, ...)
+        - focus-metavariable: $SINK
+
+
+
     metadata:
       category: security
       subcategory:
