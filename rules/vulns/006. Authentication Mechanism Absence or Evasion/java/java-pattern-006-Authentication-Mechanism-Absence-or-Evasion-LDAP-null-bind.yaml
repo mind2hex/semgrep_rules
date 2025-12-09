@@ -1,0 +1,9 @@
+rules:
+  - id: java-pattern-006-Authentication-Mechanism-Absence-or-Evasion-LDAP-null-bind
+    languages: [java]
+    severity: WARNING
+    message: >
+      Possible LDAP null bind: LdapManager.canAuthenticate is called with a user
+      and password without ensuring the password is non-empty. If the LDAP
+      server allows unauthenticated bind, this can lead to an auth bypass.
+    pattern: $MGR.canAuthenticate($USER, $PASS)

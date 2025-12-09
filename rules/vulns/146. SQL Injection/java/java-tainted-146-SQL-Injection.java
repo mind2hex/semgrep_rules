@@ -1,3 +1,22 @@
+// EXAMPLE 0
+private String toAuditCkSql(String groupId, String streamId, String auditId, String dt) {
+	DateTimeFormatter formatter = DateTimeFormat.forPattern(DAY_FORMAT);
+	DateTime date = formatter.parseDateTime(dt);
+	String startDate = date.toString(SECOND_FORMAT);
+	String endDate = date.plusDays(1).toString(SECOND_FORMAT);
+	return new SQL()
+			.SELECT("log_ts", "sum(count) as total")
+			.FROM("audit_data")
+			// ruleid: java-tainted-146-SQL-Injection
+			.WHERE("inlong_group_id = '" + groupId + "'", "inlong_stream_id = '" + streamId + "'", "audit_id = '" + auditId + "'")
+			// ruleid: java-tainted-146-SQL-Injection
+			.WHERE("log_ts >= '" + startDate + "'", "log_ts < '" + endDate + "'")
+			.GROUP_BY("log_ts")
+			.ORDER_BY("log_ts")
+			.toString();
+}
+
+
 // EXAMPLE 1
 public List<Usuario> buscarUsuarios(String nombre) {
     List<Usuario> usuarios = new ArrayList<>();

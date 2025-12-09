@@ -2,9 +2,11 @@ rules:
   - id: java-tainted-146-SQL-Injection
     languages:
       - java
-    severity: ERROR
+    severity: HIGH
     message: |
       Dynamic SQL statements are generated without the required data validation and without using parameterized statements or stored procedures.
+    mode: taint
+
     pattern-sources:
       # javax.servlet.http.HttpServletRequest
       - pattern-either:
@@ -49,38 +51,38 @@ rules:
         - focus-metavariable: $X
 
     pattern-sinks:
-      - patterns:
-        - pattern-either:
-          # string concatenation
-          - pattern-either:
-            - pattern: |
-                "$SQLSTR" + $TARGET
-            - pattern: |
-                "$SQLSTR" + $TARGET + ...
-          - pattern-either:
-            - pattern: String.format("$SQLSTR", ...)
-            - patterns:
-              - pattern: |
-                  "$SQLSTR".replace("...", $SINK)
-              - focus-metavariable: $SINK
-        - metavariable-regex:
-            metavariable: $SQLSTR
-            regex: 
-              "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
-              
-    mode: taint
+        # direct concatenation
+        - patterns:
+            - pattern-either:
+                # string concatenation
+                - pattern: |
+                    "$SQLSTR" + $TARGET
+                - pattern: |
+                    "$SQLSTR" + $TARGET + ...
+                - pattern: String.format("$SQLSTR", ...)
+                - patterns:
+                    - pattern: |
+                        "$SQLSTR".replace("...", $SINK)
+                    - focus-metavariable: $SINK
+            - metavariable-regex:
+                metavariable: $SQLSTR
+                regex: 
+                    "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
+
+        # import org.apache.ibatis.jdbc.SQL;
+        - patterns:
+            - pattern-either:    
+                - pattern: new SQL().SELECT(...).FROM(...).WHERE(..., $SINK, ...);
+                - pattern: new SQL().SELECT(...).FROM(...).WHERE(...).WHERE(..., $SINK, ...);
+            - focus-metavariable: $SINK
     metadata:
-      category: security
-      subcategory:
-        - vuln
-      cwe:
-        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
-          Command ('SQL Injection')"
-      confidence: MEDIUM
-      likelihood: MEDIUM
-      impact: HIGH
-      owasp:
-        - A3:2021 Injection
-      technology:
-        - flask
-        - django
+        category: security
+        subcategory:
+            - vuln
+        cwe:
+            - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+        confidence: MEDIUM
+        likelihood: MEDIUM
+        impact: HIGH
+        owasp:
+            - A3:2021 Injection

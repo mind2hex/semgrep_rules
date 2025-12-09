@@ -1,0 +1,30 @@
+rules:
+  - id: java-tainted-100-Server-Side-Request-Forgery-SSRF
+    languages:
+      - java
+    severity: HIGH
+    message: >
+      It is possible to induce the application's server into making requests to
+      an arbitrary domain.
+    mode: taint
+    pattern-sources:
+      - pattern: getAuthenticationRequest().getRequestURI()
+      - patterns:
+          - pattern: |
+              $RETURNTYPE $FUNCTION(..., $SOURCE, ...){...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - pattern: new HttpGet(...);
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-918: Server-Side Request Forgery (SSRF)"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      owasp:
+        - A10:2021 Server-Side Request Forgery (SSRF)
+      references:
+        - https://pentesterlab.com/exercises/cve-2022-x41x9

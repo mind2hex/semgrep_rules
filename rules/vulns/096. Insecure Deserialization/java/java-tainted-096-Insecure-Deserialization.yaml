@@ -94,9 +94,12 @@ rules:
             - pattern-inside: XStream $XSTREAM = new XStream(); ...
             - pattern: $XSTREAM.fromXML(...)
 
+        # https://pentesterlab.com/exercises/cve-2023-46xx2
         - patterns:
             - pattern-inside: Yaml $YAML = new Yaml(); ...
-            - pattern: $YAML.load(...)
+            - pattern-either:
+                - pattern: $YAML.load(...)
+                - pattern: $YAML.dump(...)
 
         - patterns: 
             # tofix

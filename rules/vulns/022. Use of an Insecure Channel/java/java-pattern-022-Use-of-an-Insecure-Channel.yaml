@@ -1,0 +1,17 @@
+rules:
+  - id: java-pattern-022-Use-of-an-Insecure-Channel
+    languages:
+      - java
+    severity: WARNING
+    message: The system transmits information through a channel without encryption.
+    pattern-either:
+      - pattern: SSLSocketFactory.getDefault().createSocket(...);
+    metadata:
+      category: security
+      subcategory:
+        - secure default
+      cwe:
+        - "CWE-419: Unprotected Primary Channel"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW

@@ -1,0 +1,32 @@
+rules:
+  - id: java-pattern-009-Sensitive-Information-in-Source-Code
+    languages:
+      - java
+    severity: WARNING
+    message: The source code repository contains sensitive information such as
+      usernames, passwords, email addresses and IP addresses, among others.
+      Alternatively, while values may be password=123 o aws.secret_key=test,
+      they reveal the bad practice of storing sensitive information in the
+      repository with no encryption, and sooner or later they can be replaced
+      for real sensitive values.
+    pattern-either:
+      # hardcoded encryption secret
+      - pattern-either:
+        - pattern: Algorithm.$ALG("..." + ...)
+        - pattern: Algorithm.$ALG("...")
+
+      # generic secret
+      - pattern-either:
+        - pattern: |
+            secret = "...";
+    metadata:
+      references:
+        - https://pentesterlab.com/exercises/cve-2023-x48x9
+      category: security
+      subcategory:
+        - secure default
+      cwe:
+        - "CWE-540: Inclusion of Sensitive Information in Source Code"
+      confidence: LOW
+      likelihood: MEDIUM
+      impact: MEDIUM
