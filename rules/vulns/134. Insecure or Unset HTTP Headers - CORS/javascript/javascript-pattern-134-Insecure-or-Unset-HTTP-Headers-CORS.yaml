@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-pattern-134-Insecure-or-Unset-HTTP-headers-CORS
+  - id: javascript-pattern-134-insecure-or-unset-http-headers-cors
     languages:
       - javascript
       - typescript

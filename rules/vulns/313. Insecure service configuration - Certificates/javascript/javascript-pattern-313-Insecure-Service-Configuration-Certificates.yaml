@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-pattern-313-Insecure-Service-Configuration-Certificates
+  - id: javascript-pattern-313-insecure-service-configuration-certificates
     languages:
       - javascript
       - typescript

@@ -2,7 +2,7 @@
 const { exec } = require('child_process');
 app.post('/ping', (req, res) => {
     const host = req.body.host;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     exec(`ping -c 4 ${host}`, (error, stdout, stderr) => {
         res.send(stdout);
     });
@@ -12,7 +12,7 @@ app.post('/ping', (req, res) => {
 const { spawn } = require('child_process');
 app.get('/list', (req, res) => {
     const directory = req.query.dir;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     const ls = spawn('ls', ['-la', directory], { shell: true });
     ls.stdout.on('data', (data) => {
         res.write(data);
@@ -23,7 +23,7 @@ app.get('/list', (req, res) => {
 const { execSync } = require('child_process');
 function processFile(userFilename) {
     const output = 
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     execSync('cat /logs/' + userFilename);
     return output.toString();
 }
@@ -32,7 +32,7 @@ function processFile(userFilename) {
 const { execFile } = require('child_process');
 const getUserLogs = async (request, reply) => {
     const username = request.params.username;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     execFile('grep', [username, '/var/log/access.log'], { shell: true }, (err, stdout) => {
         reply.send(stdout);
     });
@@ -43,7 +43,7 @@ const { exec } = require('child_process');
 router.post('/convert', (req, res) => {
     const format = req.body.format;
     const filename = req.body.file;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     exec(`convert input.jpg -format ${format} ${filename}`, (err, stdout) => {
         res.json({ success: true });
     });
@@ -54,7 +54,7 @@ const { spawn } = require('child_process');
 function runDiagnostics(req, res) {
     const diagnosticCommand = req.headers['x-diagnostic-cmd'];
     const fullCommand = `/usr/bin/diagnose ${diagnosticCommand}`;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     spawn(fullCommand, { shell: true });
 }
 
@@ -64,7 +64,7 @@ const exec = util.promisify(require('child_process').exec);
 app.get('/dns/:domain', async (req, res) => {
     const domain = req.params.domain;
     try {
-        // ruleid: javascript-tainted-command-injection
+        // ruleid: javascript-tainted-404-os-command-injection
         const { stdout } = await exec(`nslookup ${domain}`);
         res.send(stdout);
     } catch (error) {
@@ -76,7 +76,7 @@ app.get('/dns/:domain', async (req, res) => {
 const { fork } = require('child_process');
 app.post('/run-worker', (req, res) => {
     const workerPath = req.body.worker;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     const worker = fork(workerPath);
     worker.on('message', (msg) => {
         res.json(msg);
@@ -89,7 +89,7 @@ function backupUserData(request) {
     const userId = request.query.id;
     const backupPath = request.query.path;
     const command = `tar -czf backup.tar.gz /users/${userId} && mv backup.tar.gz ${backupPath}`;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     exec(command, (error) => {
         console.log('Backup completed');
     });
@@ -99,7 +99,7 @@ function backupUserData(request) {
 const { spawn } = require('child_process');
 exports.handler = (event, context) => {
     const userEnv = event.headers.environment;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     const process = spawn('node', ['script.js'], {
         env: { ...process.env, USER_SETTING: userEnv },
         shell: true
@@ -109,7 +109,7 @@ exports.handler = (event, context) => {
 // Example 11: Nested function with tainted flow
 const cp = require('child_process');
 function executeCommand(cmd) {
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     return cp.execSync(cmd);
 }
 app.post('/execute', (req, res) => {
@@ -122,7 +122,7 @@ app.post('/execute', (req, res) => {
 const { exec } = require('child_process');
 const commandRunner = (req, res, next) => {
     if (req.body.systemCommand) {
-        // ruleid: javascript-tainted-command-injection
+        // ruleid: javascript-tainted-404-os-command-injection
         exec(req.body.systemCommand, (err, stdout) => {
             req.commandOutput = stdout;
             next();
@@ -136,7 +136,7 @@ const commandRunner = (req, res, next) => {
 const { spawn } = require('child_process');
 class SystemUtil {
     runCommand(userInput) {
-        // ruleid: javascript-tainted-command-injection
+        // ruleid: javascript-tainted-404-os-command-injection
         return spawn('bash', ['-c', userInput], { stdio: 'pipe' });
     }
 }
@@ -145,7 +145,7 @@ class SystemUtil {
 const { exec } = require('child_process');
 const runShellCommand = (command) => {
     return new Promise((resolve, reject) => {
-        // ruleid: javascript-tainted-command-injection
+        // ruleid: javascript-tainted-404-os-command-injection
         exec(command, (error, stdout, stderr) => {
             if (error) reject(error);
             else resolve(stdout);
@@ -167,7 +167,7 @@ function buildAndExecute(req) {
         req.body.destination
     ];
     const command = args.join(' ');
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     execSync(command);
 }
 
@@ -176,7 +176,7 @@ const { exec } = require('child_process');
 const searchLogs = async function (request, reply) {
     const searchTerm = request.query.search;
     const logFile = request.query.file;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     exec(`grep "${searchTerm}" /var/log/${logFile}`, (err, stdout) => {
         return reply.send({ results: stdout });
     });
@@ -185,7 +185,7 @@ const searchLogs = async function (request, reply) {
 // Example 17: Command injection through destructured parameters
 const cp = require('child_process');
 app.post('/process', ({ body: { filename, options } }, res) => {
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     cp.exec(`processor --file ${filename} ${options}`, (err, data) => {
         res.json({ processed: true });
     });
@@ -195,7 +195,7 @@ app.post('/process', ({ body: { filename, options } }, res) => {
 const { spawn } = require('child_process');
 router.post('/analyze', async (ctx) => {
     const fileToAnalyze = ctx.request.body.file;
-    // ruleid: javascript-tainted-command-injection
+    // ruleid: javascript-tainted-404-os-command-injection
     const analyzer = spawn(`/usr/bin/analyze ${fileToAnalyze}`, { shell: true });
     ctx.body = { status: 'analyzing' };
 });
@@ -205,7 +205,7 @@ const { exec } = require('child_process');
 ws.on('message', function(message) {
     const data = JSON.parse(message);
     if (data.type === 'command') {
-        // ruleid: javascript-tainted-command-injection
+        // ruleid: javascript-tainted-404-os-command-injection
         exec(data.payload, (error, stdout) => {
             ws.send(JSON.stringify({ result: stdout }));
         });
@@ -218,7 +218,7 @@ const resolvers = {
     Query: {
         systemInfo: (_, { command }) => {
             return new Promise((resolve, reject) => {
-                // ruleid: javascript-tainted-command-injection
+                // ruleid: javascript-tainted-404-os-command-injection
                 execFile('sh', ['-c', command], (error, stdout) => {
                     if (error) reject(error);
                     resolve(stdout);

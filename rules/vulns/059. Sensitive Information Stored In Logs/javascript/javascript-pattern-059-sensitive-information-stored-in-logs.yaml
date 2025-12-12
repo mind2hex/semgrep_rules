@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-sensitive-information-stored-in-logs
+  - id: javascript-pattern-059-sensitive-information-stored-in-logs
     languages:
       - javascript
       - typescript

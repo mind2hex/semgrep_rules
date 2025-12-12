@@ -1,5 +1,5 @@
 rules:
-  - id: php-tainted-000-Code-Injection
+  - id: php-tainted-000-code-injection
     languages:
       - php
     severity: HIGH

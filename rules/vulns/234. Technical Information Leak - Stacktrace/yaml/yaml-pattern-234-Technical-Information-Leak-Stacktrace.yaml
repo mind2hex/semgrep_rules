@@ -1,0 +1,21 @@
+rules:
+  - id: yaml-234-Technical-Information-Leak-Stacktrace
+    languages:
+      - yaml
+    severity: WARNING
+    message: >
+      Errors or exceptional events are not properly handled by the application
+      allowing an attacker to disclose technical information from system error
+      traces.
+    pattern-either:
+      - patterns:
+          - pattern-regex: includeStacktrace\:[ ]ALWAYS
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-209: Generation of Error Message Containing Sensitive Information"
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW

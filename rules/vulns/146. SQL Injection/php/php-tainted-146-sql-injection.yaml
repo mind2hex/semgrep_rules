@@ -1,0 +1,50 @@
+rules:
+  - id: php-tainted-000-sql-injection
+    languages:
+      - php
+    severity: HIGH
+    message: User-controlled input is being used to build or execute program code.
+      This can let an attacker inject arbitrary code or alter application logic.
+      Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: |
+              $_GET[...]
+          - pattern: |
+              $_POST[...]
+      - patterns:
+          - focus-metavariable: $SOURCE
+          - pattern: |
+              function $FOO(..., $SOURCE, ...){...}
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  "$SQLSTR" . $SINK
+              - pattern: |
+                  "$SQLSTR" .= $SINK
+              - pattern: |
+                  "$SQLSTR..."
+              - pattern: |
+                  sprintf("$SQLSTR", $SINK);
+              - pattern: |
+                  join("$SQLSTR", $SINK);
+              - pattern: |
+                  implode("$SQLSTR", $SINK);
+          - metavariable-regex:
+              metavariable: $SQLSTR
+              regex: (?i)(?i)^\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*|upper[(].*[)])
+                .*
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection

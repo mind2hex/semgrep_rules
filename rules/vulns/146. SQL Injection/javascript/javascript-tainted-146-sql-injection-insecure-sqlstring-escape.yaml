@@ -17,9 +17,25 @@ rules:
       confidence: HIGH
     mode: taint
     pattern-sources:
-      - pattern-either:
-          - pattern: function $FUNC(...)
-          - pattern-regex: async \(.*\) \=\> \{
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - patterns: 
+        - pattern: function $FUNC(..., $SINK, ...)
+        - focus-metavariable: $SINK
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+          - focus-metavariable: $SOURCE
+      
 
     pattern-sinks:
       - pattern-either:

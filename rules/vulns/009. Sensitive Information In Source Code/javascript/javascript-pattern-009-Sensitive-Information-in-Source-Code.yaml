@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-pattern-009-Sensitive-Information-in-Source-Code
+  - id: javascript-pattern-009-sensitive-information-in-source-code
     languages:
       - javascript
       - typescript

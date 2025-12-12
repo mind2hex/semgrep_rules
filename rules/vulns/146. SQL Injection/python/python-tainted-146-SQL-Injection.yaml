@@ -1,5 +1,5 @@
 rules:
-  - id: python-tainted-sql-injection
+  - id: python-tainted-146-SQL-Injection
     languages:
       - python
     severity: HIGH
@@ -80,7 +80,7 @@ rules:
     pattern-sinks:
       - patterns:
           - pattern-either:
-              - patterns:
+              - pattern-either:
                   - pattern: f"$SQLSTR{$X}..."
               - pattern-either:
                   - pattern: $FOO = "$SQLSTR" % (...)
@@ -92,7 +92,7 @@ rules:
           - metavariable-regex:
               metavariable: $SQLSTR
               regex: 
-                "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
+                "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|MERGE|@[A-Z_]*) .*"
     metadata:
       category: security
       subcategory:

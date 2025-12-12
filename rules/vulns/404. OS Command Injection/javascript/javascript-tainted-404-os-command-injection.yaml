@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-404-OS-Command-Injection
+  - id: javascript-tainted-404-os-command-injection
     languages:
       - javascript
       - typescript
@@ -14,28 +14,19 @@ rules:
       - pattern: request.body
       - pattern: request.query
       - pattern: request.params
-      - pattern: function $FUNC(...)
+      - patterns: 
+        - pattern: function $FUNC(..., $SINK, ...)
+        - focus-metavariable: $SINK
       - patterns:
-          - pattern: const $FUNC = function (..., $SOURCE, ...) { ... }
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
           - focus-metavariable: $SOURCE
       - patterns:
-          - pattern: $FOO = (..., $SOURCE, ...) => { ... }
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
           - focus-metavariable: $SOURCE
-      - patterns:
-          - pattern-inside: |
-              $APP.$METHOD($PATH, (...) => { ... })
-          - pattern-either:
-              - patterns:
-                  - pattern: ({ $VAR, ... }, ...) => { ... }
-                  - focus-metavariable: $VAR
-              - patterns:
-                  - pattern-inside: |
-                      ({ $PROP: { ..., $VAR, ... }, ... }, ...) => { ... }
-                  - pattern: $VAR
-      - patterns:
-          - pattern-inside: |
-              $ROUTER.$METHOD($PATH, async ($CTX) => { ... })
-          - pattern: $CTX
+    
     pattern-sinks:
       - pattern: child_process.exec(...)
       - pattern: child_process.exec(`...`)

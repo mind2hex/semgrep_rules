@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-tainted-146-Sql-Injection
+  - id: javascript-tainted-146-sql-injection
     languages:
       - javascript
       - typescript
@@ -14,12 +14,17 @@ rules:
       - pattern: request.body
       - pattern: request.query
       - pattern: request.params
-      - pattern: function $FUNC(...)
+      - patterns: 
+        - pattern: function $FUNC(..., $SINK, ...)
+        - focus-metavariable: $SINK
       - patterns:
           - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
           - focus-metavariable: $PARAM
       - patterns:
           - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
           - focus-metavariable: $SOURCE
       
     pattern-sanitizers:
@@ -60,8 +65,8 @@ rules:
               
           - metavariable-regex:
               metavariable: $SQLSTR
-              regex: 
-                "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
+              regex:
+                "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*|upper[(].*[)]) .*"
 
           # THIS NEED TO BE IMPROVED, BUT IDK HOW YET..
           - pattern-not-inside: |
@@ -87,6 +92,10 @@ rules:
               await $FOO.any<$RETURNTYPE>($SINK, ...)
           - pattern: |
               await $FOO.any($SINK, ...)
+
+          # Client pkg 'pg'
+          - pattern: |
+              await $PGCLIENT.query($SINK);
         - focus-metavariable: $SINK
 
 

@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-021-XPath-Injection
+  - id: javascript-021-xpath-injection
     languages:
       - javascript
       - typescript
@@ -14,13 +14,19 @@ rules:
       - pattern: request.body
       - pattern: request.query
       - pattern: request.params
-      - pattern: function $FUNC(...)
+      - patterns: 
+        - pattern: function $FUNC(..., $SINK, ...)
+        - focus-metavariable: $SINK
       - patterns:
           - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
           - focus-metavariable: $PARAM
       - patterns:
           - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
           - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+          - focus-metavariable: $SOURCE
+      
     pattern-sinks:
       - patterns:
           - pattern-either:

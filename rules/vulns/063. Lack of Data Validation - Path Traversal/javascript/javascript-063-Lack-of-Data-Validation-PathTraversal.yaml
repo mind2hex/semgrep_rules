@@ -1,12 +1,12 @@
 rules:
-  - id: javascript-063-Lack-Of-Data-Validation-PathTraversal
+  - id: javascript-063-lack-of-data-validation-pathtraversal
     languages:
       - javascript
       - typescript
-    severity: ERROR
+    severity: MEDIUM
     message: >
       The software uses external input to construct a pathname that is intended
-      to identify a file or directory but it does not properly neutralize or
+      to identify a file, directory or URL but it does not properly neutralize or
       validate special elements within the pathname.
     mode: taint
     pattern-sources:
@@ -16,15 +16,39 @@ rules:
       - pattern: request.body
       - pattern: request.query
       - pattern: request.params
-      - pattern: function $FUNC(...)
+      - patterns: 
+        - pattern: function $FUNC(..., $SINK, ...)
+        - focus-metavariable: $SINK
       - patterns:
           - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
           - focus-metavariable: $PARAM
       - patterns:
           - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
           - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+          - focus-metavariable: $SOURCE
+    
+    pattern-sanitizers:
+      - pattern: path.basename(...)
+
     pattern-sinks:
-      # via formacion dinamica URL 
+      - patterns: 
+          - pattern-either:
+            - pattern: path.join(..., $SINK)
+            - pattern: fs.writeFile($SINK, ...)
+            - pattern: fs.writeFileSync($SINK, ...)
+            - pattern: fs.readFile($SINK, ...)
+            - pattern: fs.readFileSync($SINK, ...)
+            - pattern: fs.exists($SINK)
+            - pattern: fs.existsSync($SINK)
+            - pattern: fs.createReadStream($SINK)
+            - pattern: fs.createWriteStream($SINK)
+            
+            - pattern: require($SINK)
+            - pattern: $RES.sendFile($SINK)
+          - focus-metavariable: $SINK
+
       - patterns:
           - pattern-either:
               - pattern: $AXIOS.$METHOD(`...${$SINK}`, ...)
@@ -41,11 +65,10 @@ rules:
       subcategory:
         - vuln
       cwe:
-        - "CWE-22: Improper Limitation of a Pathname to a Restricted Directory
-          ('Path Traversal')"
+        - "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
       confidence: MEDIUM
       likelihood: MEDIUM
-      impact: LOW
+      impact: MEDIUM
       technology:
         - nodejs
         - expressjs
