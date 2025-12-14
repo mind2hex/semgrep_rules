@@ -1,5 +1,5 @@
 rules:
-  - id: java-tainted-146-SQL-Injection
+  - id: java-tainted-146-sql-injection
     languages:
       - java
     severity: HIGH
@@ -64,6 +64,8 @@ rules:
                     - pattern: |
                         "$SQLSTR".replace("...", $SINK)
                     - focus-metavariable: $SINK
+                - pattern: |
+                    $FOO("$SQLSTR").append(...)
             - metavariable-regex:
                 metavariable: $SQLSTR
                 regex: 
@@ -75,6 +77,17 @@ rules:
                 - pattern: new SQL().SELECT(...).FROM(...).WHERE(..., $SINK, ...);
                 - pattern: new SQL().SELECT(...).FROM(...).WHERE(...).WHERE(..., $SINK, ...);
             - focus-metavariable: $SINK
+
+        # Idc Query Syntax (UCM Search Query Language)
+        - patterns:
+            - pattern-either:
+                - pattern: |
+                    "$SQLSTR" + ...
+                - pattern: |
+                    $FOO("$SQLSTR").append(...)
+            - metavariable-regex:
+                metavariable: $SQLSTR
+                regex: .* (<matches>|<OR>|<AND>) .*
     metadata:
         category: security
         subcategory:

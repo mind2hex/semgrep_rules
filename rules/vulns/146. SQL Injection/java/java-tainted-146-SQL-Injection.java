@@ -108,6 +108,121 @@ public int Ffoo(String param1, Object param2, long param3) {
     result = query.executeUpdate();
     return result;
 }
+public void buscar(UcmRequest req) {
+
+    IdcBinder binder = cliente.createBinder();
+    binder.putLocal("IdcService", "GET_SEARCH_RESULTS");
+
+    String query;
+    String userInput = req.getTexto();  // SOURCE
+
+    if (req.getTipo() == null) {
+        // ruleid: java-tainted-146-sql-injection
+        query = "xCampo1 <matches> `" + userInput + "`"
+              + " <OR> xCampo2 <matches> `" + userInput + "`"
+              + " <OR> dDocName <matches> `" + userInput + "`";
+    } else {
+        StringBuilder sb = new StringBuilder();
+
+        if (req.getCampoA().length() > 2) {
+            sb.append("xCampoA <matches> `").append(req.getCampoA()).append("`");
+        }
+
+        if (req.getCampoB().length() > 2) {
+            sb.append(" <AND> xCampoB <matches> `").append(req.getCampoB()).append("`");
+        }
+
+        query = sb.toString();
+    }
+
+    // SINK
+    binder.putLocal("QueryText", query);
+}
+
+public String search(UcmRequest request, IdcClient client) {
+
+    // SOURCE (input user)
+    String userQuery = request.getQuery(); 
+
+    IdcBinder binder = client.createBinder();
+    binder.putLocal("IdcService", "GET_SEARCH_RESULTS");
+
+    // ruleid: java-tainted-146-sql-injection
+    String query = "xNumeroProceso <matches> `" + userQuery + "`";
+
+    // SINK
+    binder.putLocal("QueryText", query);
+
+    return client.sendRequest(new IdcContext("weblogic"), binder)
+                 .getResponseAsString();
+}
+
+
+public String buscarDocumentos(RequestDTO req, IdcClient client) {
+
+    String proceso = req.getProceso();     // SOURCE
+    String tipoDoc = req.getTipoDoc();     // SOURCE
+    String cuenta  = req.getCuenta();      // SOURCE
+
+    IdcBinder binder = client.createBinder();
+    binder.putLocal("IdcService", "GET_SEARCH_RESULTS");
+
+    StringBuilder q = new StringBuilder();
+
+    if (proceso != null && proceso.length() > 2) {
+        q.append("xNumeroProceso <matches> `").append(proceso).append("`");
+    }
+
+    if (tipoDoc != null && tipoDoc.length() > 2) {
+        q.append(" <AND> xTipoDocumental <matches> `").append(tipoDoc).append("`");
+    }
+
+    if (cuenta != null && cuenta.length() > 2) {
+        q.append(" <AND> dDocAccount <matches> `").append(cuenta).append("`");
+    }
+
+    // SINK (donde se coloca la query construida)
+    binder.putLocal("QueryText", q.toString());
+
+    return client.sendRequest(new IdcContext("admin"), binder)
+                 .getResponseAsString();
+}
+
+
+public String foo(RequestDTO request){
+  try { 
+    IdcClient<?, ?, ?> cliente = connection._getUCMConnection_(); 
+    DataBinder binder = cliente._createBinder_();
+
+    IdcContext userContext = new _IdcContext_(properties._getUser_());
+
+    binder._putLocal_(Constants.IDC_SERVICE, "GET_SEARCH_RESULTS");
+    binder._putLocal_("SortField", "dInDate");
+    binder._putLocal_("SortOrder", "Desc");
+    binder._putLocal_("ResultCount", "100");
+
+    if (
+      request._getTipoBusqueda_() == null || 
+      request._getTipoBusqueda_()._isEmpty_() || 
+      !request._getTipoBusqueda_()._equalsIgnoreCase_(properties._getTipoBusqueda_())
+    ) { 
+      binder._putLocal_("QueryText", "xNumeroProceso <matches> " + request.getQueryText() + " <OR> xLLaveSAPCRM <matches> " + request._getQueryText_() + " <OR> dDocName <matches> " + request._getQueryText_() + "");
+    } else { 
+      StringBuilder query = new _StringBuilder_();
+      if (request._getxNumeroProceso_()._length_() > 3){ 
+        query._append_("xNumeroProceso <matches> ").append(request.getxNumeroProceso()).append("");
+      }
+      if (request._getxTipoDocumental_()._length_() > 3){
+        query._append_(" <AND> xTipoDocumental <matches> ").append(request.getxTipoDocumental()).append("");
+      }
+      if (request._getdDocAccount_()._length_() > 3) {
+        query._append_(" <AND> dDocAccount <matches> ").append(request.getdDocAccount()).append("");
+      }
+      binder._putLocal_("QueryText", query._toString_()); 
+    }
+  }catch(){}
+}
+
 
 // FP EXAMPLE 1
 public List<Prerequisito> foo(final String source) {
@@ -118,3 +233,5 @@ public List<Prerequisito> foo(final String source) {
     // ...
     return list(query);
 }
+
+
