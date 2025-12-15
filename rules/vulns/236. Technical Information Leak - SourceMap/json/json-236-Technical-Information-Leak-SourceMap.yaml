@@ -11,6 +11,8 @@ rules:
           - pattern: '"sourceMap": true'
           - pattern-not-inside: |
               "development": ...
+          - pattern-not-inside: |
+              "local": ...
     metadata:
       category: security
       subcategory:

@@ -518,14 +518,19 @@ rules:
       
       # API Endpoints with credentials
       - pattern-either:
-        - pattern: |
-            "api_url": ...
-        - pattern: |
-            "apiUrl": ...
-        - pattern: |
-            "base_url": ...
-        - pattern: |
-            "baseUrl": ...
+        - patterns:
+          - pattern-either:
+            - pattern: |
+                "api_url": "$URL"
+            - pattern: |
+                "apiUrl": "$URL"
+            - pattern: |
+                "base_url": "$URL"
+            - pattern: |
+                "baseUrl": "$URL"
+          - metavariable-regex:
+              metavariable: $URL
+              regex: http.*
       
       # Credentials generic
       - pattern-either:

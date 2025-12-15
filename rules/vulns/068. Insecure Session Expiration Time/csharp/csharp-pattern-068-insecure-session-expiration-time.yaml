@@ -1,0 +1,17 @@
+rules:
+  - id: csharp-pattern-068-insecure-session-expiration-time
+    languages:
+      - csharp
+    severity: WARNING
+    message: |
+      User sessions do not expire after 5 minutes of inactivity.
+    pattern-either:
+      - patterns:
+          - pattern: >
+              new JwtPayload(..., expires: DateTime.UtcNow.AddHours($HOURS), ...)
+          - focus-metavariable: $HOURS
+          - metavariable-comparison:
+              metavariable: $HOURS
+              comparison: $HOURS > 1
+    metadata:
+      category: best-practice
