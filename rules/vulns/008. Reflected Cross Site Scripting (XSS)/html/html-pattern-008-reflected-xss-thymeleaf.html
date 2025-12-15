@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: header}">
+</head>
+<body>
+<div class="container">
+  <div class="header" th:replace="~{fragments :: menu}">
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <h1>Welcome</h1>
+      <!-- ruleid: html-pattern-008-reflected-xss-thymeleaf !-->
+      <p th:utext="'Hello, ' + ${name} + '!'" />
+      <p>You can start by personalising the page with your name by using <a th:href="@{/?name=hacker}">this link</a></p>
+    </div>
+
+    <div class="col-lg-12" th:replace="~{fragments :: footer}">
+    </div>
+  </div>
+</div>
+</body>
+</html>

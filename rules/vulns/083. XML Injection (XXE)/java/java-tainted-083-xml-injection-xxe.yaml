@@ -1,0 +1,99 @@
+rules:
+  - id: java-tainted-083-xml-injection-xxe
+    languages:
+      - java
+    message: It is possible to inject XML code into the application's requests,
+      which is then interpreted by the server. This could allow an attacker to
+      perform data exfiltration or execute commands remotely.
+    severity: HIGH
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: private $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+
+    pattern-sinks:
+      # DocumentBuilderFactory
+      - patterns:
+          - pattern-inside: >
+              DocumentBuilderFactory $DBF =
+              DocumentBuilderFactory.newInstance();
+
+              ...
+          - pattern: |
+              DocumentBuilder $DB = $DBF.newDocumentBuilder();
+              ...
+              $DB.parse(..., $SINK, ...);
+          - focus-metavariable: $SINK
+      
+      # SAXParser
+      - patterns:
+        - pattern-inside: |
+            SAXParserFactory $SPF = SAXPasrerFactory.newInstance();
+            ...
+        - pattern: |
+            SAXParser $SP = $SPF.newSAXParser();
+            ...
+            $SP.parse(..., $SINK, ...);
+        - focus-metavariable: $SINK
+
+      # XMLInputFactory
+      - patterns:
+          - pattern-inside: |
+              XMLInputFactory $FACTORY = XMLInputFactory.newInstance();
+              ...
+          - pattern: $FACTORY.createXMLStreamReader(...);
+
+      # Transformer (XSLT)
+      - patterns:
+        - pattern-inside: |
+            TransformerFactory $TF = TransformerFactory.newInstance();
+            ...
+        - pattern: |
+            Transformer $TRANSFORMER = $TF.newTransformer(...);
+            ...
+            $TRANSFORMER.transform(..., $SINK, ...);
+        - focus-metavariable: $SINK
+    
+      # SchemaFactory (XSD Validation)
+      - patterns:
+        - pattern-inside: |
+            SchemaFactory $SF = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+            ...
+        - pattern: |
+            Schema $SCHEMA = $SF.newSchema(...);
+            ...
+            Validator $VALIDATOR = $SCHEMA.newValidator();
+            ...
+            $VALIDATOR.validate(..., $SINK, ...);
+        - focus-metavariable: $SINK
+
+      # XXE with XPATH
+      - patterns:
+        - pattern-inside: |
+            XPathFactory $XPF = XPathFactory.newInstance();
+            ...
+        - pattern: |
+            XPath $XPATH = $XPF.newXPath();
+            ...
+            $XPATH.evaluate(..., $SINK, ...);
+        - focus-metavariable: $SINK
+
+      # SAX Builder
+      - patterns:
+        - pattern-inside: SAXBuilder $SB = new SAXBuilder(); ...
+        - pattern: $SB.build(...);
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-611: Improper Restriction of XML External Entity Reference"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A4:2017 XML External Entities (XXE)

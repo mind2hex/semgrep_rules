@@ -1,0 +1,29 @@
+rules:
+  - id: java-pattern-052-insecure-encryption-algorithm
+    languages:
+      - java
+    severity: LOW
+    message: >
+      The application uses a cryptographically weak or deprecated hash algorithm
+      via `MessageDigest.getInstance` (e.g., MD2, MD4, MD5, SHA-1, RIPEMD-160).
+      These algorithms are vulnerable to collision attacks and must not be used
+      for security-sensitive purposes such as password hashing, token generation,
+      digital signatures, or integrity checks against an active attacker.
+      Use a modern hash (e.g., SHA-256/SHA-512) for integrity only, or a proper
+      password hashing function (PBKDF2, bcrypt, scrypt, Argon2) when handling
+      credentials.
+    pattern-either:
+      - patterns:
+          - pattern: MessageDigest.getInstance("$INSECALG")
+          - metavariable-regex:
+              metavariable: $INSECALG
+              regex: (MD2|MD4|MD5|SHA-1|RIPEMD160|)
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-328: Use of Weak Hash"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: LOW

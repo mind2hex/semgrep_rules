@@ -1,8 +1,8 @@
 rules:
-  - id: generic-pattern-009-Sensitive-Information-in-Source-Code
+  - id: generic-pattern-009-sensitive-information-in-source-code
     languages:
       - generic
-    severity: INFO
+    severity: WARNING
     message: The source code repository contains sensitive information such as
       usernames, passwords, email addresses and IP addresses, among others.
       Alternatively, while values may be password=123 o aws.secret_key=test,
@@ -18,6 +18,9 @@ rules:
 
       #  aws cloud platform credentials
       - pattern-regex: cloud.auth.aws_.*
+
+      # .properties secrets
+      - pattern-regex: spring.datasource.(url|password|username)=.*
 
     metadata:
       category: security

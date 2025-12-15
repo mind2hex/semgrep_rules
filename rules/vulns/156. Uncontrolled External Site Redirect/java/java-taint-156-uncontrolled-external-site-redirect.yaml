@@ -1,0 +1,27 @@
+rules:
+  - id: java-tainted-156-uncontrolled-external-site-redirect
+    languages:
+      - java
+    severity: MEDIUM
+    message: >
+      Redirects made by the application are not controlled and could be
+      manipulated by an attacker.    
+    mode: taint
+    pattern-sources:
+      - pattern: getAuthenticationRequest().getRequestURI()
+      - patterns:
+          - pattern: |
+              $RETURNTYPE $FUNCTION(..., $SOURCE, ...){...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - pattern: return "redirect:" + ...;
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      owasp: []

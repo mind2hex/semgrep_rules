@@ -16,7 +16,7 @@ public class XXEVulnerable1 {
             // PATCH: dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             DocumentBuilder db = dbf.newDocumentBuilder();
             // SINK: parse() procesa el XML sin validaciones
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             Document doc = db.parse(new InputSource(new StringReader(xmlInput)));
             return doc;
         } catch (Exception e) {
@@ -41,7 +41,7 @@ public class XXEVulnerable2 {
             // PATCH: spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             SAXParser parser = spf.newSAXParser();
             // SINK: parse() sin protección XXE
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             parser.parse(new InputSource(new StringReader(xmlInput)), new DefaultHandler());
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -63,7 +63,7 @@ public class XXEVulnerable3 {
             // PATCH: factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             // PATCH: factory.setProperty("com.ctc.wstx.disallowDocTypeDecl", true);
             // SINK: createXMLStreamReader() sin validaciones
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             XMLStreamReader reader = factory.createXMLStreamReader(new StringReader(xmlInput));
             return reader;
         } catch (Exception e) {
@@ -90,7 +90,7 @@ public class XXEVulnerable4 {
             Transformer transformer = tf.newTransformer(new StreamSource(new StringReader(xsltInput)));
             StringWriter output = new StringWriter();
             // SINK: transform() sin protección
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             transformer.transform(new StreamSource(new StringReader(xmlInput)), new StreamResult(output));
             return output.toString();
         } catch (Exception e) {
@@ -119,7 +119,7 @@ public class XXEVulnerable5 {
             Schema schema = sf.newSchema(new StreamSource(new StringReader(xsdSchema)));
             Validator validator = schema.newValidator();
             // SINK: validate() sin protección XXE
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             validator.validate(new StreamSource(new StringReader(xmlInput)));
         } catch (SAXException e) {
             throw new RuntimeException(e);
@@ -144,7 +144,7 @@ public class XXEVulnerable6 {
             // PATCH: dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             DocumentBuilder db = dbf.newDocumentBuilder();
             // SINK: sigue siendo vulnerable
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             Document doc = db.parse(new InputSource(new StringReader(xmlInput)));
             return doc;
         } catch (Exception e) {
@@ -169,7 +169,7 @@ public class XXEVulnerable7 {
             XPath xpath = xpf.newXPath();
             InputSource is = new InputSource(new StringReader(xmlInput));
             // SINK: evaluate() procesa XXE
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             String result = xpath.evaluate(xpathQuery, is);
             return result;
         } catch (Exception e) {
@@ -194,7 +194,7 @@ public class XXEBlindVulnerable {
             // PATCH: dbf.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
             DocumentBuilder db = dbf.newDocumentBuilder();
             // SINK: parse desde URL externa
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             db.parse(new URL(urlInput).openStream());
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -217,7 +217,7 @@ public class XXEVulnerable9 {
             // PATCH: dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             DocumentBuilder db = dbf.newDocumentBuilder();
             // SINK: parse() procesa la concatenación
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             Document doc = db.parse(new InputSource(new StringReader(xml)));
             return doc;
         } catch (Exception e) {
@@ -243,10 +243,28 @@ public class XXEVulnerable10 {
             // PATCH: dbf.setExpandEntityReferences(false);
             DocumentBuilder db = dbf.newDocumentBuilder();
             // SINK: parse() sin validación
-            // ruleid: java-083-XML-Injection-XXE
+            // ruleid: java-tainted-083-xml-injection-xxe
             Document doc = db.parse(xmlStream);
             return doc;
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
+// EXAMPLE 11: XXE con SAXBuilder
+import org.jdom2.input.SAXBuilder;
+public class XXEVulnerable11 {
+    public Document convertXmlToString(String xmlStr) {
+        SAXBuilder sax = new SAXBuilder();
+
+        try {
+            // ruleid: java-tainted-083-xml-injection-xxe
+            Document doc = sax.build(new StringReader(xmlStr));
+            System.out.print(doc.getRootElement().getValue());
+            return doc;
+
+        } catch (JDOMException | IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -9,6 +9,9 @@ rules:
     mode: taint
     pattern-sources:
       - patterns:
+          - pattern: private $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+      - patterns:
           - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
           - focus-metavariable: $SOURCE
     pattern-sinks:
@@ -36,6 +39,8 @@ rules:
       - patterns:
           - pattern-inside: ExpressionFactory $FOO = ExpressionFactory.newInstance(); ...
           - pattern: $FOO.createValueExpression(...);
+      - patterns:
+          - pattern: Ognl.parseExpression(...)
     metadata:
       category: security
       subcategory:

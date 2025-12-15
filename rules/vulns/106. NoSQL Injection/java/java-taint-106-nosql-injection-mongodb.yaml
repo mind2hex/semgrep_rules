@@ -1,0 +1,52 @@
+rules:
+  - id: java-taint-106-nosql-injection-mongodb
+    languages:
+      - java
+    severity: MEDIUM
+    message: >
+      User-controlled input is used to dynamically construct a MongoDB query.
+      When input is concatenated into query documents, JSON strings, or `$where`
+      JavaScript expressions, an attacker can inject MongoDB operators (e.g. `$ne`,
+      `$gt`, `$or`) or arbitrary conditions, leading to authentication bypass,
+      unauthorized data access, or logic manipulation.
+      Build queries using typed parameters and explicit field values, and avoid
+      parsing or executing dynamically constructed MongoDB query strings.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: public $FUNC(..., $SOURCE, ...){...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      # insecure concatenation
+      - pattern-either:
+        - patterns:
+          - pattern: |
+              $NOSQLSTR + ...
+          - metavariable-regex:
+              metavariable: $NOSQLSTR
+              regex: '^"\s*\{'
+        # not working
+        - patterns:
+            - pattern: |
+                "this.user == '" + ... 
+
+
+      # direct sink
+      - pattern-either:
+          - patterns:
+              - pattern-inside: BasicDBObject $QUERY = new BasicDBObject(); ...
+              - pattern: $QUERY.put(...);
+          - pattern: Document.parse(...)
+          - pattern: new Document(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-943: Improper Neutralization of Special Elements in Data Query
+          Logic"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM
+      references:
+        - https://pentesterlab.com/exercises/java-code-review-14

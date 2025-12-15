@@ -1,0 +1,37 @@
+rules:
+  - id: html-pattern-008-reflected-xss-thymeleaf
+    languages:
+      - html
+    severity: HIGH
+    message: >
+      Thymeleaf is rendering unescaped HTML via `th:utext`, which disables
+      output escaping.
+      If the rendered value includes user-controlled data (e.g., `${param.*}`,
+      `${#request.getParameter(...)}`, model attributes from a request),
+      an attacker can inject HTML/JS (reflected or stored XSS).
+      Prefer `th:text` (escaped output) or strictly sanitize/allowlist HTML
+      before rendering with `th:utext`.
+
+    pattern-either:
+      - pattern: |
+          th:utext=...
+      - pattern: |
+          th:inline="javascript"
+      - pattern: |
+          th:style=...
+      - pattern-regex: (?i)\bth:on\w+\s*=\s*".*?"
+
+    metadata:
+      category: security
+      technology:
+        - thymeleaf
+      cwe:
+        - "CWE-79: Improper Neutralization of Input During Web Page Generation
+          (Cross-site Scripting)"
+      confidence: MEDIUM
+      subcategory:
+        - vuln
+      likelihood: MEDIUM
+      impact: MEDIUM
+      owasp:
+        - A7:2017 Cross-Site Scripting (XSS)

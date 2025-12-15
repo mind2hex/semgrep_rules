@@ -1,0 +1,29 @@
+rules:
+  - id: generic-pattern-159-excessive-privileges
+    languages:
+      - generic
+    severity: INFO
+    message: >
+      The application is configured or implemented to run with excessive privileges
+      (e.g., using administrative or superuser accounts such as `root`).
+      Running services or applications with more privileges than strictly required
+      violates the principle of least privilege and significantly increases the
+      impact of a compromise, allowing an attacker to escalate access, modify
+      critical system resources, or fully take over the environment.
+      Configure the application to use a minimally privileged account restricted
+      only to the permissions it strictly needs.
+    pattern-either:
+      - pattern-regex: spring.datasource.username=root
+      - pattern-regex: '(?i)\buser(name)?\s*=\s*root\b'
+      - pattern-regex: '(?i)\b(uid|user[_-]?id)\s*=\s*0\b'
+      - pattern-regex: '(?i)\brun(as)?\s*=\s*root\b'
+      - pattern-regex: '(?i)\bsudo\b.*\b(all|nopasswd)\b'
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-250: Execution with Unnecessary Privileges"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH

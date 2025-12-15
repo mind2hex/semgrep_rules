@@ -1,0 +1,30 @@
+rules:
+  - id: java-tainted-013-insecure-object-reference
+    languages:
+      - java
+    severity: MEDIUM
+    message: The systems authorization mechanism does not prevent one user from
+      accessing another users data by modifying the key value that identifies
+      it.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: private $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern: $FOO.getById(...)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-639: Authorization Bypass Through User-Controlled Key"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      owasp:
+        - A1:2021 Broken Access Control

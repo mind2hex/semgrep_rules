@@ -1,5 +1,5 @@
 rules:
-  - id: java-tainted-100-Server-Side-Request-Forgery-SSRF
+  - id: java-tainted-100-server-side-request-forgery-ssrf
     languages:
       - java
     severity: HIGH
@@ -15,6 +15,11 @@ rules:
           - focus-metavariable: $SOURCE
     pattern-sinks:
       - pattern: new HttpGet(...);
+      - pattern: new UrlResource(...);
+      - patterns:
+          - pattern-inside: new UrlResource(...); ...
+          - pattern: $FOO.getContentAsString(...);
+          - focus-metavariable: $FOO
     metadata:
       category: security
       subcategory:
@@ -28,3 +33,4 @@ rules:
         - A10:2021 Server-Side Request Forgery (SSRF)
       references:
         - https://pentesterlab.com/exercises/cve-2022-x41x9
+        - https://pentesterlab.com/exercises/java-code-review-12
