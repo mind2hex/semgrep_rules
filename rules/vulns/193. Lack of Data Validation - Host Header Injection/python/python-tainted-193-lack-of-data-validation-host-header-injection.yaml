@@ -1,0 +1,45 @@
+rules:
+  - id: python-tainted-193-lack-of-data-validation-host-header-injection
+    languages:
+      - python
+    severity: HIGH
+    message: >
+      The application allows to manipulate the host header which may lead to
+      unintended redirects to malicious websites.
+    mode: taint
+    pattern-sources:
+        - pattern-either:
+            - pattern: |
+                request.headers["Host"]
+            - pattern: |
+                request.host
+        - pattern-either:
+            - pattern: |
+                self.request.headers["Host"]
+            - pattern: |
+                self.request.host
+    pattern-sinks:
+        - pattern: urllib.parse.urlunparse(...)
+        - pattern: redirect($X)
+        - pattern: HttpResponseRedirect($X)
+        - pattern: flask.redirect($X)
+        - pattern: django.shortcuts.redirect($X)
+        - pattern: send_mail(..., $X, ...)
+        - pattern: EmailMessage(..., $X, ...)
+        - pattern: build_absolute_uri($X)
+        - pattern: |
+            Response(headers={"Location": $X})
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-20: Improper Input Validation"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM
+      technology:
+        - flask
+        - django
+        - tornado

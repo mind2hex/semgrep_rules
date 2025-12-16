@@ -1,0 +1,47 @@
+rules:
+  - id: python-tainted-156-uncontrolled-external-site-redirect
+    languages: 
+      - python
+    severity: MEDIUM
+    message: >
+      Redirects made by the application are not controlled and could be
+      manipulated by an attacker.    
+    mode: taint
+    pattern-sources:
+      # request object 
+      - patterns:
+          - pattern: request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (GET|POST|body|path|path_info|content_params|query_params|data|FILES|META|headers|COOKIES|args|form|files|values|json|get_json|cookies|view_args|path_params|file|state|params|matchdict|json_body|query|forms|get_data)
+
+      # request object 2
+      - patterns:
+          - pattern: self.request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (arguments|query_arguments|body_arguments|files|path_args|path_kwargs|headers|cookies)
+      
+      # tornado
+      - pattern: self.get_argument(...)
+      
+      # function params
+      - patterns:
+          - pattern: |
+              def $FOO(..., $X, ...):
+                ...
+          - focus-metavariable: $X
+    
+    pattern-sinks:
+        - pattern: django.shortcuts.redirect(...)
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      owasp: []

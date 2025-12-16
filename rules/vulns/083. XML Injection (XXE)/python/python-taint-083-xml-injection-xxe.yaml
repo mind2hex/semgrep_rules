@@ -1,0 +1,71 @@
+rules:
+  - id: python-taint-083-xml-injection-xxe
+    languages: 
+      - python
+    message: It is possible to inject XML code into the application's requests,
+      which is then interpreted by the server. This could allow an attacker to
+      perform data exfiltration or execute commands remotely.
+    severity: HIGH
+    mode: taint
+    pattern-sources:
+      # request object 
+      - patterns:
+          - pattern: request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (GET|POST|body|path|path_info|content_params|query_params|data|FILES|META|headers|COOKIES|args|form|files|values|json|get_json|cookies|view_args|path_params|file|state|params|matchdict|json_body|query|forms|get_data)
+
+      # request object 2
+      - patterns:
+          - pattern: self.request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (arguments|query_arguments|body_arguments|files|path_args|path_kwargs|headers|cookies)
+      
+      # tornado
+      - pattern: self.get_argument(...)
+      
+      # function params
+      - patterns:
+          - pattern: |
+              def $FOO(..., $X, ...):
+                ...
+          - focus-metavariable: $X
+
+    pattern-sinks:
+        # lxml.etree
+        - pattern-either:
+            - patterns:
+                - pattern-either:
+                    - pattern-inside: |
+                        $PARSER = lxml.etree.HTMLParser()
+                        ...
+                    - pattern-inside: |
+                        $PARSER = lxml.etree.XMLParser(resolve_entities=True)
+                        ...
+                    - pattern-inside: |
+                        $PARSER = lxml.etree.XMLParser()
+                        ...
+                - pattern: |
+                    lxml.etree.parse($SINK, $PARSER)
+                - focus-metavariable: $SINK
+
+            - pattern: lxml.etree.fromstring(...)
+            - pattern: lxml.etree.XML(...)
+        
+        # xml
+        - pattern-either:
+            - pattern: xml.etree.ElementTree.fromstring(...)
+            - pattern: xml.dom.minidom.parseString(...)
+            
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-611: Improper Restriction of XML External Entity Reference"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A4:2017 XML External Entities (XXE)

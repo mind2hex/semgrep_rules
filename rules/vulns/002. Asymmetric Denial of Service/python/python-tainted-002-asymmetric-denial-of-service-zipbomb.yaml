@@ -1,0 +1,43 @@
+rules:
+  - id: python-tainted-002-asymmetric-denial-of-service-zipbomb
+    languages:
+      - python
+    severity: HIGH
+    message: |
+        User-controlled compressed data is passed to zlib.decompress() without validation or resource limits.An attacker can supply a specially crafted compressed payload that expands massively during decompression, causing excessive CPU or memory consumption and leading to a denial of service (zip bomb). Always enforce strict size limits, decompression bounds, and input validation when handling compressed data from requests.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (GET|POST|body|path|path_info|content_params|query_params|data|FILES|META|headers|COOKIES|args|form|files|values|json|get_json|cookies|view_args|path_params|file|state|params|matchdict|json_body|query|forms|get_data)
+      - patterns:
+          - pattern: self.request.$METHOD
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (arguments|query_arguments|body_arguments|files|path_args|path_kwargs|headers|cookies)
+      - pattern: self.get_argument(...)
+      - patterns:
+          - pattern: |
+              def $FOO(..., $X, ...):
+                ...
+          - focus-metavariable: $X
+    pattern-sinks:
+      - patterns:
+          - pattern: zlib.decompress($SINK, ...)
+          - focus-metavariable: $SINK
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-405: Asymmetric Resource Consumption (Amplification)"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A4:2021 Insecure Design
+      technology:
+        - django
+        - flask
