@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-063-lack-of-data-validation-pathtraversal
+  - id: javascript-taint-063-lack-of-data-validation-path-traversal
     languages:
       - javascript
       - typescript
@@ -33,33 +33,40 @@ rules:
       - pattern: path.basename(...)
 
     pattern-sinks:
-      - patterns: 
-          - pattern-either:
-            - pattern: path.join(..., $SINK)
-            - pattern: fs.writeFile($SINK, ...)
-            - pattern: fs.writeFileSync($SINK, ...)
-            - pattern: fs.readFile($SINK, ...)
-            - pattern: fs.readFileSync($SINK, ...)
-            - pattern: fs.exists($SINK)
-            - pattern: fs.existsSync($SINK)
-            - pattern: fs.createReadStream($SINK)
-            - pattern: fs.createWriteStream($SINK)
-            
-            - pattern: require($SINK)
-            - pattern: $RES.sendFile($SINK)
-          - focus-metavariable: $SINK
+        # POSSIBLE FILENAME CREATIONS SINKS
+        - patterns:
+            - pattern-either:
+                - pattern: filename = `...`
 
-      - patterns:
-          - pattern-either:
-              - pattern: $AXIOS.$METHOD(`...${$SINK}`, ...)
-              - pattern: $AXIOS.$METHOD(`...${$SINK}...`, ...)
-          - focus-metavariable: $SINK
-          - metavariable-regex:
-              metavariable: $METHOD
-              regex: (get|post|put)
-          - metavariable-regex:
-              metavariable: $AXIOS
-              regex: (axios|axiosMonitorV1)
+        # FILE SINKS
+        - patterns: 
+            - pattern-either:
+                - pattern: path.join(..., $SINK)
+                - pattern: fs.writeFile($SINK, ...)
+                - pattern: fs.writeFileSync($SINK, ...)
+                - pattern: fs.readFile($SINK, ...)
+                - pattern: fs.readFileSync($SINK, ...)
+                - pattern: fs.exists($SINK)
+                - pattern: fs.existsSync($SINK)
+                - pattern: fs.createReadStream($SINK)
+                - pattern: fs.createWriteStream($SINK)
+                
+                - pattern: require($SINK)
+                - pattern: $RES.sendFile($SINK)
+            - focus-metavariable: $SINK
+        
+        # URL SINKS
+        - patterns:
+            - pattern-either:
+                - pattern: $AXIOS.$METHOD(`...${$SINK}`, ...)
+                - pattern: $AXIOS.$METHOD(`...${$SINK}...`, ...)
+            - focus-metavariable: $SINK
+            - metavariable-regex:
+                metavariable: $METHOD
+                regex: (get|post|put)
+            - metavariable-regex:
+                metavariable: $AXIOS
+                regex: (axios|axiosMonitorV1)
     metadata:
       category: security
       subcategory:
