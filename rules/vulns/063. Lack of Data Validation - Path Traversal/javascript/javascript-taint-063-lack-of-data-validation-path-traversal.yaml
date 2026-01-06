@@ -9,6 +9,10 @@ rules:
       to identify a file, directory or URL but it does not properly neutralize or
       validate special elements within the pathname.
     mode: taint
+    paths:
+      exclude:
+        - "*.tsx"
+        - "*.jsx"
     pattern-sources:
       - pattern: req.body
       - pattern: req.query

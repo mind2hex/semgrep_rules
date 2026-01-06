@@ -1,0 +1,16 @@
+rules:
+  - id: generic-pattern-313-insecure-service-configuration-certificates
+    languages:
+      - generic
+    severity: INFO
+    message: |
+      The use of insecure options that disable certificate verification is found, which can facilitate MitM attacks.
+    pattern-either:
+      - patterns:
+        - pattern-inside: |
+            tls {
+              ...
+            }
+        - pattern-either:
+          - pattern: validate_certificate_chain = false
+          - pattern: validate_certificate_name  = false

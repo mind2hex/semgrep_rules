@@ -1,23 +1,20 @@
 rules:
-  - id: javascript-tainted-prototype-pollution
+  - id: javascript-taint-390-prototype-pollution-dynamic-assign
     languages:
       - javascript
       - typescript
     severity: CRITICAL
     message: >
-      Semgrep found a possible prototype pollution vulnerability using taint
-      analysis.
+      Deserializing untrusted JSON and merging it into application objects can result in Prototype Pollution, allowing attackers to modify the global object prototype.
     mode: taint
+    paths:
+      exclude:
+        - "*.tsx"
+        - "*.jsx"
     pattern-sources:
       # Express.js typical
       - pattern: req.body
-      - pattern: req.query
-      - pattern: req.params
-      # Fastify / Koa
       - pattern: request.body
-      - pattern: request.query
-      - pattern: request.params
-      # Generic function args
       - pattern: function $FUNC(...) 
       - patterns:
           - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
@@ -25,23 +22,17 @@ rules:
       - patterns:
           - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
           - focus-metavariable: $SOURCE
+    
+    pattern-propagators:
+      - pattern: $OBJ[$KEY] = $SRC
+        from: $SRC
+        to: $OBJ
+
     pattern-sinks:
-      # DIRECT PROTOTYPE POLLUTION
+      # object.assign
       - patterns:
-          - pattern: $OBJ[$ATTR] = $X;
-          - focus-metavariable: $X
-          - pattern-not: $X["..."]
-          
-      # LODASH METHODS
-      - pattern-either:
-          - pattern: _.merge(..., $SINK, ...)
-          - pattern: _.mergeWith(..., $SINK, ...)
-          - pattern: _.defaultsDeep(..., $SINK, ...)
-          - pattern: _.set(..., $PATH, ...)
-          - pattern: _.setWith(..., $PATH, ...)
-          - pattern: _.assign(..., $SINK, ...)
-          - pattern: _.extend(..., $SINK, ...)
-          - pattern: _.zipObjectDeep($KEYS, ...)
+        - pattern: $DST[$KEY] = $SRC[$KEY]
+
     metadata:
       category: security
       subcategory:

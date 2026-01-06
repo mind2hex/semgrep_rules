@@ -1,0 +1,50 @@
+rules:
+  - id: javascript-taint-390-prototype-pollution-json-parse
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: >
+      Deserializing untrusted JSON and merging it into application objects can result in Prototype Pollution, allowing attackers to modify the global object prototype.
+    mode: taint
+    paths:
+      exclude:
+        - "*.tsx"
+        - "*.jsx"
+    pattern-sources:
+      # Express.js typical
+      - pattern: req.body
+      - pattern: request.body
+      - pattern: function $FUNC(...) 
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+
+    pattern-sinks:
+      # object.assign
+      - patterns:
+        - pattern-inside: |
+            $FOO = JSON.parse(...);
+            ...
+        - pattern: Object.assign(..., $FOO)
+        - focus-metavariable: $FOO
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-1321: Improperly Controlled Modification of Object Prototype
+          Attributes"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A4:2021 Insecure Design
+        - A6:2021 Vulnerable and Outdated Components
+      technology:
+        - nodejs
+        - expressjs

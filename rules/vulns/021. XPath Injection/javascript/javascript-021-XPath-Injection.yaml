@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-021-xpath-injection
+  - id: javascript-taint-021-xpath-injection
     languages:
       - javascript
       - typescript

@@ -1,0 +1,25 @@
+rules:
+  - id: javascript-taint-115-security-controls-bypass-or-absence-rate-limit
+    languages:
+      - javascript
+    severity: ERROR
+    message: >
+      The application has a rate limit mechanism that use request headers as the key.
+    mode: taint
+    pattern-sources:
+      - pattern: request.headers
+      - pattern: request.json
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              await $RT.consume($SINK);
+          - focus-metavariable: $SINK
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-799: Improper Control of Interaction Frequency"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
