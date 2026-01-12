@@ -26,8 +26,15 @@ public class TokenFilter implements HandlerInterceptor {
 
 // EXAMPLE 2
 public class JJwtTool {
-  // ruleid: java-pattern-009-Sensitive-Information-in-Source-Code
+  // ruleid: java-pattern-009-sensitive-information-in-source-code
   private static String secret =
       "HSyJ0eXAiOiJKV1QasdfffffffSd3g8923402347523fffasdfasgwaegwaegawegawegawegawetwgewagagew"
           + "asdf23r23DEEasdfawef134t2fawt2g325gafasdfasdfiLCJhbGciOiJIUzI1NiJ9";
+}
+
+// EXAMPLE 3
+@Controller
+public class AuthClienteSinRegistroApiController implements AuthClienteSinRegistroApi {
+    // ruleid: java-pattern-009-sensitive-information-in-source-code
+    private final Key key = Keys.hmacShaKeyFor("qwertyuiopasdfghjklzxcvbnm123456".getBytes());
 }

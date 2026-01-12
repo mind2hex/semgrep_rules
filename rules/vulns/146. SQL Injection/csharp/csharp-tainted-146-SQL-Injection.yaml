@@ -1,86 +1,67 @@
 rules:
-  - id: csharp-tainted-146-SQL-Injection
+  - id: csharp-taint-146-sql-injection
     languages:
       - csharp
-    severity: CRITICAL
-    message: |
-      Dynamic SQL statements are generated without the required data validation and without using parameterized statements or stored procedures.
-    mode: taint
+    severity: ERROR
+    message: >
+      Dynamic SQL statements are generated without the required data validation
+      and without using parameterized statements or stored procedures.
     pattern-sources:
-      # 1. Function/Method Parameters
       - pattern-either:
-        - patterns:
-          - pattern: $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: public $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: private $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: protected $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: internal $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-
-      # 2. ASP.NET Request Objects
+          - patterns:
+              - pattern: $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+              - focus-metavariable: $SOURCE
       - pattern-either:
-        - pattern: Request.QueryString[$SOURCE]
-        - pattern: Request.QueryString.Get($SOURCE)
-        - pattern: Request.Form[$SOURCE]
-        - pattern: Request.Form.Get($SOURCE)
-        - pattern: Request.Params[$SOURCE]
-        - pattern: Request[$SOURCE]
-        - pattern: Request.Headers[$SOURCE]
-        - pattern: Request.Cookies[$SOURCE]
-        - pattern: Request.ServerVariables[$SOURCE]
-        - pattern: Request.UserHostAddress
-        - pattern: Request.UserAgent
-        - pattern: Request.UrlReferrer
-        - pattern: Request.RawUrl
-        - pattern: Request.Path
-        - pattern: Request.PathInfo
-        - pattern: Request.Url.Query
-        - pattern: Request.HttpMethod
-
-      # 3. ASP.NET Core HttpContext
+          - pattern: Request.QueryString[$SOURCE]
+          - pattern: Request.QueryString.Get($SOURCE)
+          - pattern: Request.Form[$SOURCE]
+          - pattern: Request.Form.Get($SOURCE)
+          - pattern: Request.Params[$SOURCE]
+          - pattern: Request[$SOURCE]
+          - pattern: Request.Headers[$SOURCE]
+          - pattern: Request.Cookies[$SOURCE]
+          - pattern: Request.ServerVariables[$SOURCE]
+          - pattern: Request.UserHostAddress
+          - pattern: Request.UserAgent
+          - pattern: Request.UrlReferrer
+          - pattern: Request.RawUrl
+          - pattern: Request.Path
+          - pattern: Request.PathInfo
+          - pattern: Request.Url.Query
+          - pattern: Request.HttpMethod
       - pattern-either:
-        - pattern: HttpContext.Request.Query[$SOURCE]
-        - pattern: HttpContext.Request.Form[$SOURCE]
-        - pattern: HttpContext.Request.Headers[$SOURCE]
-        - pattern: HttpContext.Request.Cookies[$SOURCE]
-        - pattern: HttpContext.Request.RouteValues[$SOURCE]
-        - pattern: HttpContext.Request.Path
-        - pattern: HttpContext.Request.PathBase
-        - pattern: HttpContext.Request.QueryString
-        - pattern: HttpContext.Request.Body
-        - pattern: HttpContext.Connection.RemoteIpAddress
-
+          - pattern: HttpContext.Request.Query[$SOURCE]
+          - pattern: HttpContext.Request.Form[$SOURCE]
+          - pattern: HttpContext.Request.Headers[$SOURCE]
+          - pattern: HttpContext.Request.Cookies[$SOURCE]
+          - pattern: HttpContext.Request.RouteValues[$SOURCE]
+          - pattern: HttpContext.Request.Path
+          - pattern: HttpContext.Request.PathBase
+          - pattern: HttpContext.Request.QueryString
+          - pattern: HttpContext.Request.Body
+          - pattern: HttpContext.Connection.RemoteIpAddress
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: '"$SQLSTR" + ...'
+              - pattern: String.Format("$SQLSTR", ...)
+              - patterns:
+                  - pattern: $"$SQLSTR{$SINK}..."
+                  - focus-metavariable: $SINK
+              - pattern: StringBuilder.Append("$SQLSTRING")
+              - patterns:
+                  - pattern: '"$SQLSTR".Replace(..., $SINK)'
+                  - focus-metavariable: $SINK
+          - metavariable-regex:
+              metavariable: $SQLSTR
+              regex: (?i)(?i)^\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*)
+                .*
     pattern-sanitizers:
       - pattern: SqlString.escape(...)
       - pattern: connection.escape(...)
       - pattern: validator.escape(...)
       - pattern: $FOO.FromSqlInterpolated(...)
-    pattern-sinks:
-      - patterns:
-        - pattern-either:
-          - pattern: |
-              "$SQLSTR" + ...
-          - pattern: |
-              String.Format("$SQLSTR", ...)
-          - patterns: 
-            - pattern: |
-                $"$SQLSTR{$SINK}..."
-            - focus-metavariable: $SINK
-          - pattern: StringBuilder.Append("$SQLSTRING")
-
-        - metavariable-regex:
-            metavariable: $SQLSTR
-            regex: 
-              "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
-
+    mode: taint
     metadata:
       category: security
       subcategory:

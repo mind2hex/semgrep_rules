@@ -5,7 +5,7 @@ public Socket createSocket(
     InetAddress clientHost,
     int clientPort)
     throws IOException, UnknownHostException {
-    // ruleid: java-pattern-022-Use-of-an-Insecure-Channel
+    // ruleid: java-pattern-022-use-of-an-insecure-channel
     return SSLSocketFactory.getDefault().createSocket(
         host,
         port,

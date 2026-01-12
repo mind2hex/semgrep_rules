@@ -1,6 +1,6 @@
-// VULNERABLE: Concatenación directa
+// EXAMPLE 1: Concatenación directa
 public User GetUser(string username, string password){
-    // ruleid: csharp-tainted-sql-injection
+    // ruleid: csharp-taint-146-sql-injection
     string query = "SELECT * FROM Users WHERE Username = '" + username + 
                    "' AND Password = '" + password + "'";
     
@@ -14,7 +14,7 @@ public User GetUser(string username, string password){
 
 // VULNERABLE: Uso de String.Format
 public List<Product> SearchProducts(string searchTerm){
-    // ruleid: csharp-tainted-sql-injection
+    // ruleid: csharp-taint-146-sql-injection
     string query = String.Format(
         "SELECT * FROM Products WHERE Name LIKE '%{0}%' OR Description LIKE '%{0}%'", 
         searchTerm
@@ -28,7 +28,7 @@ public List<Product> SearchProducts(string searchTerm){
 
 // VULNERABLE: String interpolation
 public Order GetOrderById(int orderId, string customerEmail){
-    // ruleid: csharp-tainted-sql-injection
+    // ruleid: csharp-taint-146-sql-injection
     string query = $"SELECT * FROM Orders WHERE OrderId = {orderId} " + $"AND CustomerEmail = '{customerEmail}'";
     
     using (SqlCommand cmd = new SqlCommand(query, connection))
@@ -40,14 +40,14 @@ public Order GetOrderById(int orderId, string customerEmail){
 // VULNERABLE: StringBuilder
 public DataTable GetFilteredData(string tableName, string whereClause){
     StringBuilder queryBuilder = new StringBuilder();
-    // todoruleid: csharp-tainted-sql-injection
+    // todoruleid: csharp-taint-146-sql-injection
     queryBuilder.Append("SELECT * FROM ");
     queryBuilder.Append(tableName);
     
     if (!string.IsNullOrEmpty(whereClause))
     {
         queryBuilder.Append(" WHERE ");
-        // todoruleid: csharp-tainted-sql-injection
+        // todoruleid: csharp-taint-146-sql-injection
         queryBuilder.Append(whereClause);
     }
     
@@ -59,7 +59,7 @@ public DataTable GetFilteredData(string tableName, string whereClause){
 
 // VULNERABLE: Stored procedure con EXEC dinámico
 public void UpdateUserRole(string username, string newRole){
-    // ruleid: csharp-tainted-sql-injection
+    // ruleid: csharp-taint-146-sql-injection
     string query = "EXEC sp_UpdateRole @sql = 'UPDATE Users SET Role = ''" + 
                    newRole + "'' WHERE Username = ''" + username + "'''";
     
@@ -73,8 +73,33 @@ public void UpdateUserRole(string username, string newRole){
 public IEnumerable<Customer> SearchCustomers(string city)
 {
     using (var context = new DataContext(connectionString))
-    {   // ruleid: csharp-tainted-sql-injection
+    {   // ruleid: csharp-taint-146-sql-injection
         string query = "SELECT * FROM Customers WHERE City = '" + city + "'";
         return context.ExecuteQuery<Customer>(query);
     }
+}
+
+public void DisplayGreeting(userInput)
+{
+    try {
+        SqlConnection sql= new SqlConnection(
+            @"data source=localhost;" +
+            "user id=sa;password=pAs$w0rd;"
+        );
+        sql.Open();
+        // ruleid: csharp-taint-146-sql-injection
+        string sqlstring="SELECT ccnum" +
+        " FROM cust WHERE id=" + userInput;
+        SqlCommand cmd = new SqlCommand(sqlstring,sql);
+        ccnum = (string)cmd.ExecuteScalar();
+    } catch (SqlException se) {
+        status = sqlstring + " failed\n\r";
+        foreach (SqlError e in se.Errors) {
+            status += e.Message + "\n\r";
+        }
+    }
+
+    string sqlstring="SELECT ccnum" + " FROM cust WHERE id=REPL";
+    // ruleid: csharp-taint-146-sql-injection
+    string sqlstring2 = sqlstring.Replace("REPL",userInput);
 }

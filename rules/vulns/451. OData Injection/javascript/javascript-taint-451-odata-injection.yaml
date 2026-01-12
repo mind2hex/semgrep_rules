@@ -1,0 +1,58 @@
+rules:
+  - id: javascript-taint-451-odata-injection
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: >
+      OData injection allows an attacker to manipulate the query parameters of
+      an OData API (such as $filter, $orderby, etc.) to access, modify, or
+      exfiltrate unauthorized data by exploiting insufficient validation or
+      filtering.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - patterns:
+          - pattern: function $FUNC(..., $SINK, ...)
+          - focus-metavariable: $SINK
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+          - focus-metavariable: $SOURCE
+          
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - patterns:
+                - focus-metavariable: $SINK
+                - pattern: |
+                    `$ODATASTR${$SINK}...`
+              
+          - metavariable-regex:
+              metavariable: $ODATASTR
+              regex: 
+                  ".*[ +](eq|and)[ +].*"
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-943: Improper Neutralization of Special Elements in Data Query
+          Logic"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs

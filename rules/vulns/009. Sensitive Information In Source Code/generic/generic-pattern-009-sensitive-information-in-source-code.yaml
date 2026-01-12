@@ -22,6 +22,10 @@ rules:
       # .properties secrets
       - pattern-regex: spring.datasource.(url|password|username)=.*
 
+      # github token
+      # curl -H "Authorization: token <token>" https://api.github.com/user
+      - pattern-regex: ghp_[a-zA-Z0-9]*
+
     metadata:
       category: security
       subcategory:

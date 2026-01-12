@@ -1,5 +1,5 @@
 rules:
-  - id: java-pattern-009-Sensitive-Information-in-Source-Code
+  - id: java-pattern-009-sensitive-information-in-source-code
     languages:
       - java
     severity: WARNING
@@ -19,6 +19,12 @@ rules:
       - pattern-either:
         - pattern: |
             secret = "...";
+        - pattern: |
+            password = "...";
+
+      - pattern: |
+          Keys.hmacShaKeyFor("...".getBytes());
+
     metadata:
       references:
         - https://pentesterlab.com/exercises/cve-2023-x48x9

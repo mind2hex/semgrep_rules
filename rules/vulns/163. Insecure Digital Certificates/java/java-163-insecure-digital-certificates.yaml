@@ -1,0 +1,91 @@
+rules:
+  - id: java-pattern-163-insecure-digital-certificates
+    languages:
+      - java
+    severity: ERROR
+    message: >
+      Insecure SSL/TLS configuration detected. This code disables certificate
+      or hostname validation, which allows Man-in-the-Middle (MITM) attacks.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      cwe:
+        - "CWE-295: Improper Certificate Validation"
+
+    pattern-either:
+
+      #
+      # =========================
+      # Netty – InsecureTrustManager
+      # =========================
+      #
+      - pattern-either:
+          - pattern: import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+          - pattern: |
+              SslContextBuilder.forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .build()
+
+      #
+      # =========================
+      # TrustManager que acepta todos los certificados
+      # =========================
+      #
+      - pattern: |
+          new TrustManager[] {
+            new X509TrustManager() {
+              public void checkClientTrusted(X509Certificate[] $C, String $A) {}
+              public void checkServerTrusted(X509Certificate[] $C, String $A) {}
+              public X509Certificate[] getAcceptedIssuers() { return null; }
+            }
+          }
+
+      #
+      # =========================
+      # SSLContext inicializado con TrustManager inseguro
+      # =========================
+      #
+      - pattern: |
+          SSLContext $CTX = SSLContext.getInstance($PROTO);
+          $CTX.init(null, $TM, new SecureRandom());
+
+      #
+      # =========================
+      # HostnameVerifier inseguro (acepta todo)
+      # =========================
+      #
+      - pattern-either:
+          - pattern: |
+              new HostnameVerifier() {
+                public boolean verify(String $H, SSLSession $S) {
+                  return true;
+                }
+              }
+          - pattern: HttpsURLConnection.setDefaultHostnameVerifier($HV)
+          - pattern: |
+              HttpsURLConnection.setDefaultHostnameVerifier(
+                ($H, $S) -> true
+              )
+
+      #
+      # =========================
+      # Apache HTTP Client – NoopHostnameVerifier
+      # =========================
+      #
+      - pattern-either:
+          - pattern: import org.apache.http.conn.ssl.NoopHostnameVerifier;
+          - pattern: NoopHostnameVerifier.INSTANCE
+
+      #
+      # =========================
+      # OkHttp – hostnameVerifier inseguro
+      # =========================
+      #
+      - pattern: |
+          $CLIENT.newBuilder()
+            .hostnameVerifier(($H, $S) -> true)
+            .build()

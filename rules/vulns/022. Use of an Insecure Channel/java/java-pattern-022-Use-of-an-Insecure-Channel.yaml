@@ -1,5 +1,5 @@
 rules:
-  - id: java-pattern-022-Use-of-an-Insecure-Channel
+  - id: java-pattern-022-use-of-an-insecure-channel
     languages:
       - java
     severity: WARNING
