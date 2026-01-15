@@ -1,0 +1,22 @@
+rules:
+  - id: generic-pattern-009-sensitive-information-in-source-code-azure-trigger-signature
+    languages:
+      - generic
+    severity: ERROR
+    message: >
+      Possible Azure Logic App trigger signature (sig) exposed in source code.
+      This signature can be used to invoke the workflow without authentication.
+      https://learn.microsoft.com/en-us/community/content/secure-integration-workflows-azure-logic-apps-api-management
+    pattern-regex: |
+      https://.*&sig=.*
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-540: Inclusion of Sensitive Information in Source Code"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://learn.microsoft.com/en-us/community/content/secure-integration-workflows-azure-logic-apps-api-management

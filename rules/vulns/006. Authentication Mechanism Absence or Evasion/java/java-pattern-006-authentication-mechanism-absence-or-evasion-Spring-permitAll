@@ -1,0 +1,30 @@
+rules:
+  - id: java-pattern-006-authentication-mechanism-absence-or-evasion-Spring-permitAll
+    languages:
+      - java
+    severity: CRITICAL
+    message: >-
+      **Authentication Bypass via `permitAll()` Configuration**
+
+      This finding indicates the use of **`permitAll()`** in a Spring Security
+      configuration, which allows **unauthenticated and unauthorized access** to
+      the affected endpoint(s).
+
+      When applied to sensitive or state-changing endpoints, `permitAll()` can
+      lead to **authentication bypass**, allowing any user (including anonymous
+      users) to access protected functionality.
+    pattern-regex: \.permitAll\s*\(\s*\)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-287: Improper Authentication"
+        - "CWE-306: Missing Authentication for Critical Function"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A2:2021 Broken Authentication
+      technology:
+        - Spring

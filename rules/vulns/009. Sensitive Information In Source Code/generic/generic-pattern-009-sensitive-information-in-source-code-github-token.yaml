@@ -1,0 +1,21 @@
+rules:
+  - id: generic-pattern-009-sensitive-information-in-source-code-github-token
+    languages:
+      - generic
+    severity: WARNING
+    message: |-
+      **Possible GitHub Personal Access Token (PAT) Found in Source Code**
+      This finding indicates that a **GitHub authentication token** (e.g. `ghp_...`) may be **hardcoded or exposed** in the repository.
+      GitHub tokens grant access to GitHub resources according to their scopes and, if leaked, may allow unauthorized actions such as reading private repositories, modifying code, accessing CI secrets, or performing API operations on behalf of the token owner.
+      To test the authenticity of the token, use the following command: `curl -H "Authorization: token <token>" https://api.github.com/user`
+    pattern-either:
+      - pattern-regex: ghp_[a-zA-Z0-9]*
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-540: Inclusion of Sensitive Information in Source Code"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH

@@ -1,0 +1,48 @@
+rules:
+  - id: java-taint-091-Log-Injection
+    languages:
+      - java
+    severity: LOW
+    message: The system logs entries that contain input from untrusted sources
+      without properly validating, sanitizing or escaping their content.
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getHeader(...)
+          - pattern: $REQUEST.getHeaders(...)
+          - pattern: $REQUEST.getCookies()
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+          - pattern: $REQUEST.getQueryString()
+          - pattern: $REQUEST.getInputStream()
+          - pattern: $REQUEST.getReader()
+      - pattern-either:
+          - pattern: $REQUEST.getParameter(...)
+          - pattern: $REQUEST.getParameterValues(...)
+          - pattern: $REQUEST.getParameterMap()
+    pattern-sinks:
+      - patterns:
+          - pattern: $LOGGER.$METHOD(...);
+          - metavariable-regex:
+              metavariable: $LOGGER
+              regex: (?i)(logger|log|debug|debugger)
+          - metavariable-regex:
+              metavariable: $METHOD
+              regex: (?i)(info|debug|warn|warning|error|log)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-117: Improper Output Neutralization for Logs"
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW
+      owasp:
+        - A3:2021 Injection

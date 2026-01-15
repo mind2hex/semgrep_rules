@@ -1,0 +1,19 @@
+rules:
+  - id: generic-pattern-009-sensitive-information-in-source-code-gmail-address
+    languages:
+      - generic
+    severity: WARNING
+    message: >
+      Possible hardcoded gmail address found in source code. Check if the email
+      exist trying to log in without introducing a password. Gmail will tell you
+      if the address exist or not.
+    patterns:
+      - pattern-regex: |
+          \b[a-zA-Z0-9][a-zA-Z0-9._%+-]*@gmail\.com\b
+      - pattern-not-regex: |
+          \b.*(example|test|testing|demo|sample|foo|bar|admin|user|username).*\@gmail\.com\b
+    metadata:
+      category: security
+      confidence: HIGH
+      likelihood: HIGH
+      impact: LOW

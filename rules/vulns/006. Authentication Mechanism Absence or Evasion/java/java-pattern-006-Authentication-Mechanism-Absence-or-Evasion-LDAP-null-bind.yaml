@@ -1,5 +1,5 @@
 rules:
-  - id: java-pattern-006-Authentication-Mechanism-Absence-or-Evasion-LDAP-null-bind
+  - id: java-pattern-006-authentication-mechanism-absence-or-evasion-LDAP-null-bind
     languages: [java]
     severity: WARNING
     message: >

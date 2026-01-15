@@ -1,0 +1,27 @@
+rules:
+  - id: generic-pattern-009-sensitive-information-in-source-code-jwt
+    languages:
+      - generic
+    severity: WARNING
+    message: |-
+      **Possible JWT Token Found in Source Code**
+      This finding indicates that a **JSON Web Token (JWT)** may be hardcoded or exposed in the repository.
+      Hardcoding JWTs in source code is **high-risk**, as these tokens can grant access to APIs, applications, or services depending on their scopes or claims.
+      Example (decoding header and payload):
+      ```bash
+      echo "<JWT>" | cut -d'.' -f1 | base64 --decode
+      echo "<JWT>" | cut -d'.' -f2 | base64 --decode
+      ```
+    pattern-regex: 'eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+'
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-540: Inclusion of Sensitive Information in Source Code"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      references:
+        - https://jwt.io/introduction/
+        - https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html
