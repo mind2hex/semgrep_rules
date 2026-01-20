@@ -1,0 +1,24 @@
+rules:
+  - id: javascript-pattern-006-authentication-mechanism-absence-or-evasion-req-url-includes
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >
+      Insecure access control using req.url.includes.
+
+      req.url contains both path and query string, so partial matches or crafted
+      parameters may allow authentication bypass.
+    patterns:
+      - pattern: req.url.includes($PATH)
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - CWE-639 — Authorization Bypass Through User-Controlled Key
+      confidence: LOW
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A2:2017 Broken Authentication

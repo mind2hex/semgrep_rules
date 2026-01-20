@@ -1,14 +1,23 @@
 # semgrep_rules
-Set of rules for vulnerability scanning with semgrep. 
+Set of custom rules for vulnerability scanning with semgrep. 
 
 ## Rules Organization Structure
 Rules are stored using [Fluid Attacks](https://db.fluidattacks.com/vul/) typologies.
 ```
 rules/
-    000. Typology/
-        LANGUAGE/
-            language-mode-000-typology.yaml   # SEMGREP RULE
-            language-mode-000-typology.ext    # TESTING CODE FOR THE ABOVE SEMGREP RULE
+    vulns/
+        000. Typology/
+            language/
+                language-mode-000-typology.yaml   # SEMGREP RULE
+                language-mode-000-typology.ext    # TESTING CODE
+
+# example
+rules/
+    vulns/
+        404. OS Command Injection/
+            python/
+                python-404-OS-Command-Injection.yaml
+                python-404-OS-Command-Injection.py
 
 ```
 
@@ -21,7 +30,10 @@ semgrep scan --config path/to/the/rule/rule.yaml -j 30 --metrics off -v --timeou
 semgrep scan --config path/to/the/rule/injections/command_injection/ -j 30 --metrics off -v --timeout=15
 ```
 
-# Semgrep Registry General Rulesets
+## Semgrep Registry General Rulesets
+If the rules listed in this repo doesn't find anything useful, you can try the rules from the community.
+
+### General Sec Rules
 ```bash
 semgrep --config "p/owasp-top-ten"
 semgrep --config "p/security-audit"
@@ -34,7 +46,7 @@ semgrep --config "p/insecure-transport"
 semgrep --config "p/gitleaks"
 ```
 
-## Javascript/Typescript Specifics
+### Javascript/Typescript Specific Rules
 ```bash # rulesets
 semgrep --config "p/nodejs" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/expressjs" -j 30 --metrics off -v --timeout=15
@@ -42,176 +54,42 @@ semgrep --config "p/javascript" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/typescript" -j 30 --metrics off -v --timeout=15
 ```
 
-```yaml # common pattern-sources
-    pattern-sources:
-        # Express.js typical
-        - pattern: req.body
-        - pattern: req.query
-        - pattern: req.params
-        # Fastify / Koa
-        - pattern: request.body
-        - pattern: request.query
-        - pattern: request.params
-        # Generic function args
-        - pattern: function $FUNC(...) 
-        - patterns:
-            - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
-            - focus-metavariable: $PARAM
-        - patterns:
-            - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
-            - focus-metavariable: $SOURCE
-```
 
-
-## Java Specifics
+### Java Specific rules
 ```bash # rulesets
 semgrep --config "p/java" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/mobsfscan" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/findsecbugs" -j 30 --metrics off -v --timeout=15
 ```
 
-```yaml # common pattern-sources
-    pattern-sources:
-      # javax.servlet.http.HttpServletRequest
-      - pattern-either:
-        - pattern: $REQUEST.getParameter(...)
-        - pattern: $REQUEST.getParameterValues(...)
-        - pattern: $REQUEST.getParameterMap()
-        - pattern: $REQUEST.getQueryString()
-        - pattern: $REQUEST.getHeader(...)
-        - pattern: $REQUEST.getHeaders(...)
-        - pattern: $REQUEST.getCookies()
-
-      # javax.servlet.ServletRequest
-      - pattern-either:
-        - pattern: $REQUEST.getParameter(...)
-        - pattern: $REQUEST.getParameterValues(...)
-        - pattern: $REQUEST.getParameterMap()
-        - pattern: $REQUEST.getQueryString()
-        - pattern: $REQUEST.getInputStream()
-        - pattern: $REQUEST.getReader()
-
-      # java.sql.ResultSet
-      - pattern-either:
-        - pattern: $RESULT_SET.getString(...)
-        - pattern: $RESULT_SET.getObject(...)
-        - pattern: $RESULT_SET.getInt(...)
-        - pattern: $RESULT_SET.getLong(...)
-        - pattern: $RESULT_SET.getFloat(...)
-        - pattern: $RESULT_SET.getDouble(...)
-        - pattern: $RESULT_SET.getBigDecimal(...)
-        - pattern: $RESULT_SET.getDate(...)
-        - pattern: $RESULT_SET.getTime(...)
-        - pattern: $RESULT_SET.getTimestamp(...)
-
-      # org.springframework.web.servlet.mvc.Controller
-      - pattern-either:
-        - pattern: $REQUEST.getParameter(...)
-        - pattern: $REQUEST.getParameterValues(...)
-        - pattern: $REQUEST.getParameterMap()
-
-      # org.springframework.web.bind.annotation.RequestParam
-      - pattern-either:
-        - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestParam(...) $PARAM, ...) { ... }
-
-      # org.springframework.web.bind.annotation.PathVariable
-      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @PathVariable(...) $PARAM, ...) { ... }
-
-      # org.springframework.web.bind.annotation.RequestBody
-      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @RequestBody $PARAM, ...) { ... }
-
-      # org.springframework.web.bind.annotation.ModelAttribute
-      - pattern: public $RETURN_TYPE $METHOD_NAME(..., @ModelAttribute(...) $PARAM, ...) { ... }
-
-      # org.springframework.jdbc.core.JdbcTemplate
-      - pattern: $JDBC_TEMPLATE.query(...)
-      - pattern: $JDBC_TEMPLATE.queryForObject(...)
-      - pattern: $JDBC_TEMPLATE.queryForList(...)
-      - pattern: $JDBC_TEMPLATE.queryForMap(...)
-      - pattern: $JDBC_TEMPLATE.queryForRowSet(...)
-      - pattern: $JDBC_TEMPLATE.queryForStream(...)
-      - pattern: $JDBC_TEMPLATE.update(...)
-      - pattern: $JDBC_TEMPLATE.execute(...)
-
-      # javax.persistence.EntityManager
-      - pattern: $ENTITY_MANAGER.createQuery(...)
-      - pattern: $ENTITY_MANAGER.createNativeQuery(...)
-
-      # org.hibernate.Session
-      - pattern: $SESSION.createQuery(...)
-      - pattern: $SESSION.createSQLQuery(...)
-      - pattern: $SESSION.createFilter(...)
-
-      # java.util.Map
-      - pattern: $MAP.get(...)
-      - pattern: $MAP.getOrDefault(...)
-      - pattern: $MAP.keySet()
-      - pattern: $MAP.values()
-      - pattern: $MAP.entrySet()
-
-      - patterns:
-        - pattern: $RETURNTYPE $FOO(..., $X, ...){ ... }
-        - focus-metavariable: $X
-```
-
-## C# Specifics
+### C# Specific Rules
 ```bash # rulesets
 semgrep --config "p/csharp" -j 30 --metrics off -v --timeout=15
 semgrep --config "p/secrets" -j 30 --metrics off -v --timeout=15
-
 ```
+
+## Common Source Patterns
+If you want to create your own patterns, you can use the following pattern sources.
+### Javascript/Typescript Source Patterns
 ```yaml
-    # common pattern-sources for csharp
     pattern-sources:
-      # 1. Function/Method Parameters
-      - pattern-either:
-        - patterns:
-          - pattern: $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - patterns: 
+        - pattern: function $FUNC(..., $SINK, ...)
+        - focus-metavariable: $SINK
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
           - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: public $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
           - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: private $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: protected $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-        - patterns:
-          - pattern: internal $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
-          - focus-metavariable: $SOURCE
-
-      # 2. ASP.NET Request Objects
-      - pattern-either:
-        - pattern: Request.QueryString[$SOURCE]
-        - pattern: Request.QueryString.Get($SOURCE)
-        - pattern: Request.Form[$SOURCE]
-        - pattern: Request.Form.Get($SOURCE)
-        - pattern: Request.Params[$SOURCE]
-        - pattern: Request[$SOURCE]
-        - pattern: Request.Headers[$SOURCE]
-        - pattern: Request.Cookies[$SOURCE]
-        - pattern: Request.ServerVariables[$SOURCE]
-        - pattern: Request.UserHostAddress
-        - pattern: Request.UserAgent
-        - pattern: Request.UrlReferrer
-        - pattern: Request.RawUrl
-        - pattern: Request.Path
-        - pattern: Request.PathInfo
-        - pattern: Request.Url.Query
-        - pattern: Request.HttpMethod
-
-      # 3. ASP.NET Core HttpContext
-      - pattern-either:
-        - pattern: HttpContext.Request.Query[$SOURCE]
-        - pattern: HttpContext.Request.Form[$SOURCE]
-        - pattern: HttpContext.Request.Headers[$SOURCE]
-        - pattern: HttpContext.Request.Cookies[$SOURCE]
-        - pattern: HttpContext.Request.RouteValues[$SOURCE]
-        - pattern: HttpContext.Request.Path
-        - pattern: HttpContext.Request.PathBase
-        - pattern: HttpContext.Request.QueryString
-        - pattern: HttpContext.Request.Body
-        - pattern: HttpContext.Connection.RemoteIpAddress
 
 ```
