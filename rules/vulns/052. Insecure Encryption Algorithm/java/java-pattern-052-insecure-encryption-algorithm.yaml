@@ -17,7 +17,7 @@ rules:
           - pattern: MessageDigest.getInstance("$INSECALG")
           - metavariable-regex:
               metavariable: $INSECALG
-              regex: (MD2|MD4|MD5|SHA-1|RIPEMD160|)
+              regex: (MD2|MD4|MD5|SHA-1|RIPEMD160)
     metadata:
       category: security
       subcategory:

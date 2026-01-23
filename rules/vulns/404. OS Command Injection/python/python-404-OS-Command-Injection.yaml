@@ -41,7 +41,6 @@ rules:
               regex: (create_subprocess_shell|create_subprocess_exec|subprocess.create_subprocess_exec|subprocess.create_subprocess_shell)
       - pattern: $LOOP.subprocess_shell(...)
       - pattern: $LOOP.subprocess_exec(...)
-      - pattern: await asyncio.$METHOD(...)
       - pattern: await $LOOP.subprocess_shell(...)
       - pattern: await $LOOP.subprocess_exec(...)
       - pattern: pty.spawn(...)
