@@ -1,0 +1,41 @@
+rules:
+  - id: java-taint-191-lack-of-data-validation-responses-header-injection
+    languages:
+      - java
+    severity: LOW
+    message: >-
+      **HTTP Header Injection via User-Controlled Response Data**
+
+      This rule detected user-controlled input being written directly into
+      **HTTP response headers** without proper validation or neutralization.
+
+      If untrusted data is included in response headers, an attacker may inject
+      malicious header values or CRLF sequences, potentially leading to
+      **HTTP response splitting**, header manipulation, cache poisoning, or
+      downstream security issues in clients and proxies.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: private $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              var $HEADERS = $HTTPRESPONSE.getHeaders();
+              ...
+              $HEADERS.set(..., $SINK);
+          - focus-metavariable: $SINK
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-113: Improper Neutralization of CRLF Sequences in HTTP Headers"
+      owasp:
+        - "A03:2021 – Injection"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: LOW

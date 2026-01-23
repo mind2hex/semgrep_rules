@@ -1,0 +1,42 @@
+rules:
+  - id: java-taint-029-inadequate-file-size-control
+    languages:
+      - java
+    severity: MEDIUM
+    message: >-
+      **Inadequate File Size Control in File Upload Handling**
+
+      This rule detected user-controlled file data being written to disk using
+      `transferTo(...)` without evidence of file size validation or enforcement.
+
+      If file uploads are not restricted by size, an attacker may upload
+      excessively large files, potentially leading to **disk exhaustion,
+      denial of service (DoS), or degraded system performance**.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: private $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern: $SINK.transferTo($TEMPFILE)
+        focus-metavariable: $SINK
+    pattern-propagators:
+      - pattern: $FROM.flatMap($TO -> ...)
+        from: $FROM
+        to: $TO
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-770: Allocation of Resources Without Limits or Throttling"
+        - "CWE-400: Uncontrolled Resource Consumption"
+      owasp:
+        - "A04:2021 – Insecure Design"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM

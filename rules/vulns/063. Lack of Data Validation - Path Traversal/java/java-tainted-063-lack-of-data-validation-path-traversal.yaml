@@ -2,10 +2,20 @@ rules:
   - id: java-tainted-063-lack-of-data-validation-path-traversal
     languages:
       - java
-    severity: HIGH
-    message: User-controlled input is being used to build or execute program code.
-      This can let an attacker inject arbitrary code or alter application logic.
-      Validate and sanitize inputs and avoid dynamic code evaluation.
+    severity: MEDIUM
+    message: >-
+      **Path Traversal via User-Controlled File Path**
+
+      This rule detected user-controlled input being used as a **filesystem path**
+      in file read or write operations.
+
+      Without proper validation and normalization, an attacker may exploit path
+      traversal sequences (such as `../` or absolute paths) to access or modify
+      **unauthorized files** outside the intended directory, potentially leading
+      to sensitive data exposure or system compromise.
+
+      To mitigate this risk, validate file paths against an allowlist, normalize
+      paths before use, and enforce access to a restricted base directory.
     mode: taint
     pattern-sources:
       - patterns:
@@ -15,6 +25,32 @@ rules:
           - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
           - focus-metavariable: $SOURCE
     pattern-sinks:
-      - patterns:
-        - pattern: Files.copy($FOO, $SINK, ...);
-        - focus-metavariable: $SINK
+      - pattern-either:
+          # java.nio.file.Files
+          - pattern: Files.readAllBytes($SINK)
+          - pattern: Files.readString($SINK, ...)
+          - pattern: Files.newInputStream($SINK, ...)
+          - pattern: Files.newOutputStream($SINK, ...)
+          - pattern: Files.write($SINK, ...)
+          - pattern: Files.copy(..., $SINK, ...)
+          - pattern: Files.move(..., $SINK, ...)
+          - pattern: Files.delete($SINK)
+          # java.io
+          - pattern: new File($SINK, ...)
+          - pattern: new FileInputStream($SINK)
+          - pattern: new FileOutputStream($SINK)
+          - pattern: new FileReader($SINK)
+          - pattern: new FileWriter($SINK)
+          - pattern: new RandomAccessFile($SINK, ...)
+        focus-metavariable: $SINK
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-22: Improper Limitation of a Pathname to a Restricted Directory"
+      owasp:
+        - "A05:2021 – Security Misconfiguration"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM

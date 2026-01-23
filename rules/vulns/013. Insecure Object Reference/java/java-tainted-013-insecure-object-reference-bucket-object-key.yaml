@@ -1,0 +1,44 @@
+rules:
+  - id: java-tainted-013-insecure-object-reference-bucket-object-key
+    languages:
+      - java
+    severity: MEDIUM
+    message: >-
+      **Insecure Direct Object Reference (IDOR) in Bucket Object Access**
+
+      This rule detected user-controlled input being used directly as an
+      **object key** when accessing a storage bucket (for example,
+      via `GetObjectRequest`).
+
+      If access control or ownership validation is missing, an attacker may
+      manipulate the object key to access **unauthorized objects** stored in
+      the bucket, leading to data exposure or privilege escalation.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: private $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: public $FOO $FUNCNAME(..., $SOURCE, ...) {...}
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+            - pattern: $OBJECTREQUEST.builder().bucket($BUCKET).key($SINK)
+            - pattern: $OBJECTREQUEST.builder().contentType($CTYPE).bucket($BUCKET).key($SINK)
+          - focus-metavariable: $SINK
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-639: Authorization Bypass Through User-Controlled Key"
+        - "CWE-284: Improper Access Control"
+      owasp:
+        - "A01:2021 – Broken Access Control"
+      technology:
+        - aws-s3
+        - cloud-storage
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: MEDIUM
