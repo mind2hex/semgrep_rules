@@ -1,0 +1,136 @@
+rules:
+  - id: javascript-taint-146-sql-injection
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: >
+      Dynamic SQL statements are generated without the required data validation
+      and without using parameterized statements or stored procedures.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - patterns:
+          - pattern: function $FUNC(..., $SINK, ...)
+          - focus-metavariable: $SINK
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+          - focus-metavariable: $SOURCE
+    pattern-sanitizers:
+      - pattern: SqlString.escape($X)
+      - pattern: connection.escape($X)
+      - pattern: validator.escape($X)
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  "$SQLSTR" + ...
+              - pattern: |
+                  `$SQLSTR${...}...`
+              - pattern: |
+                  $ORM.query(`$SQLSTR${...}...`)
+              - pattern: |
+                  $ORM.query`$SQLSTR${...}...`
+              - pattern: |
+                  "$SQLSTR".concat(...);
+              - pattern: |
+                  ["$SQLSTR", ..., $SINK, ...]
+              - patterns:
+                  - pattern-inside: |
+                      $FORMAT = require('string-format');
+                      ...
+                  - pattern: $FORMAT("$SQLSTR", ...);
+              - patterns:
+                  - pattern-inside: |
+                      $UTIL = require('util');
+                      ...
+                  - pattern: |
+                      $UTIL.format("$SQLSTR", ...);
+              - pattern: |
+                  sprintf("$SQLSTR", ...);
+          - metavariable-regex:
+              metavariable: $SQLSTR
+              regex: (?i)(?i)^\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*|upper[(].*[)])
+                .*
+          - pattern-not-inside: |
+              console.$METHOD(...);
+          - pattern-not-inside: |
+              logger.$METHOD(...);
+          - pattern-not-inside: |
+              Logger.$METHOD(...);
+          - pattern-not-inside: |
+              this.log.$METHOD(...);
+          - pattern-not-inside: |
+              this.logger.$METHOD(...);
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  {
+                    ...,
+                    field: "..." + $SINK,
+                    ...
+                  }
+              - pattern: |
+                  $FOO = "..." + $SINK
+                  ...
+                  {
+                    ...,
+                    field: $FOO,
+                    ...
+                  }
+              - pattern: |
+                  {
+                    ...,
+                    field: `...${$SINK}`,
+                    ...
+                  }
+              - pattern: |
+                  $FOO.addOrderBy(
+                    ...,
+                    "..." + $SINK,
+                    ...
+                  )
+              - pattern: |
+                  $FOO.push(
+                    `...${$SINK}...`
+                  )
+
+          - focus-metavariable: $SINK
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  await $FOO.oneOrNone<RETURNTYPE>($SINK, ...)
+              - pattern: |
+                  await $FOO.oneOrNone($SINK, ...)
+              - pattern: |
+                  await $FOO.any<$RETURNTYPE>($SINK, ...)
+              - pattern: |
+                  await $FOO.any($SINK, ...)
+              - pattern: |
+                  await $PGCLIENT.query($SINK);
+          - focus-metavariable: $SINK
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs
