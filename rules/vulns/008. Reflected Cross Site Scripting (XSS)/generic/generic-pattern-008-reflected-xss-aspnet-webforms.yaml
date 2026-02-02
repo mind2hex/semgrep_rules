@@ -1,0 +1,30 @@
+rules:
+  - id: generic-pattern-008-reflected-xss-aspnet-webforms
+    languages:
+      - generic
+    severity: HIGH
+    message: >
+      ASP.NET WebForms is rendering unescaped user input via `<% Response.Write(Request.*) %>` 
+      or `<%= Request.* %>` directly into the page. 
+
+      If the rendered value includes user-controlled data (QueryString, Form, Params, or Cookies),
+      an attacker can inject HTML or JavaScript (reflected XSS) into the response.
+      
+    pattern-either:
+      - pattern-regex: "<%\\s*Response\\.Write\\s*\\(\\s*Request\\.(QueryString|Form|Params|Cookies)\\s*\\("
+      - pattern-regex: "<%=\\s*Request\\.(QueryString|Form|Params|Cookies)\\s*\\("
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-79: Improper Neutralization of Input During Web Page Generation (Cross-site Scripting)"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A7:2017 Cross-Site Scripting (XSS)
+      technology:
+        - ASP.NET
+        - C#

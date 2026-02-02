@@ -1,0 +1,43 @@
+rules:
+  - id: javascript-pattern-130-insecurely-generated-cookies-Secure
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: >
+      Sensitive cookie is being set without the Secure flag. Cookies containing
+      authentication tokens or session identifiers that are allowed to be sent
+      over unencrypted HTTP connections can be intercepted via Man-in-the-Middle
+      (MITM) attacks or network sniffing. Always set the Secure attribute to ensure
+      cookies are transmitted only over HTTPS.
+    pattern-either:
+      - pattern: |
+          res.cookie("$SECRETSTR", ..., {..., sameSite: "lax", ...})
+    metadata:
+      category: security
+      subcategory:
+        - session-management
+        - transport-security
+        - misconfiguration
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      technology:
+        - nodejs
+        - express
+        - javascript
+        - typescript
+      vulnerability_class:
+        - insecure-cookie
+      cwe:
+        - CWE-614    # Sensitive Cookie Without 'Secure' Attribute
+        - CWE-319    # Cleartext Transmission of Sensitive Information
+      owasp:
+        - A02:2021   # Cryptographic Failures
+      tags:
+        - secure-flag
+        - cookies
+        - session
+        - authentication
+        - mitm
+        - transport-security

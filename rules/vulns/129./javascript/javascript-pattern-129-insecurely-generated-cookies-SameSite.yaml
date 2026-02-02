@@ -1,0 +1,51 @@
+rules:
+  - id: javascript-pattern-129-insecurely-generated-cookies-SameSite
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: >
+      Sensitive cookie is being generated without a strict SameSite attribute.
+      Cookies with SameSite set to 'Lax' or missing the SameSite attribute entirely
+      may be sent in cross-site requests, enabling Cross-Site Request Forgery (CSRF)
+      attacks. Set SameSite=Strict for cookies containing sensitive information.
+    pattern-either:
+      # SameSite explicitly set to Lax
+      - pattern: |
+          res.cookie("$SECRETSTR", ..., {..., sameSite: "lax", ...})
+
+      # SameSite not set at all
+      - patterns:
+          - pattern: |
+              res.cookie("$SECRETSTR", ..., {...})
+          - pattern-not: |
+              res.cookie(..., {..., sameSite: "strict", ...})
+
+    metadata:
+      category: security
+      subcategory:
+        - session-management
+        - csrf
+        - misconfiguration
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      technology:
+        - nodejs
+        - express
+        - nestjs
+        - javascript
+        - typescript
+      vulnerability_class:
+        - insecure-cookie
+      cwe:
+        - CWE-1275   # Improper Cookie SameSite Attribute
+        - CWE-352    # Cross-Site Request Forgery (CSRF)
+      owasp:
+        - A01:2021   # Broken Access Control (CSRF)
+      tags:
+        - samesite
+        - cookies
+        - session
+        - csrf
+        - authentication

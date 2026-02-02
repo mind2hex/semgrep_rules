@@ -1,0 +1,48 @@
+rules:
+  - id: csharp-pattern-006-authentication-mechanism-absence-or-evasion-aspnet-missing-auth-attributes
+    languages:
+      - csharp
+    severity: HIGH
+    message: >-
+      **Missing Authentication on ASP.NET Endpoint**
+
+      This finding identifies an ASP.NET endpoint that is exposed via an HTTP
+      method attribute (`HttpGet`, `HttpPost`, `HttpPut`, `HttpDelete`, or
+      `HttpPatch`) **without any authentication or authorization attributes**
+      such as `TokenAuthorize` or `Authorize`.
+
+      If this endpoint is intended to be protected, the absence of these
+      attributes may allow **unauthenticated access**, potentially leading to
+      **authentication bypass** and unauthorized interaction with application
+      functionality.
+    patterns:
+      - pattern: |
+          [$HTTP]
+          $RETURNTYPE $FUNC(...) {...}
+
+      - metavariable-regex:
+          metavariable: $HTTP
+          regex: (Http(Get|Post|Put|Delete|Patch))
+
+      - pattern-not: |
+          [TokenAuthorize(...)]
+          $RETURNTYPE $FUNC(...) {...}
+
+      - pattern-not: |
+          [Authorize(...)]
+          $RETURNTYPE $FUNC(...) {...}
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-287: Improper Authentication"
+        - "CWE-306: Missing Authentication for Critical Function"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A2:2021 Broken Authentication
+      technology:
+        - ASP.NET
+        - C#

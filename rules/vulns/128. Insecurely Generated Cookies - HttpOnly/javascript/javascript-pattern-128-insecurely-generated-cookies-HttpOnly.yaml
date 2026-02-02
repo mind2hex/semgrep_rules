@@ -1,0 +1,47 @@
+rules:
+  - id: javascript-pattern-128-insecurely-generated-cookies-HttpOnly
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: >
+      Sensitive cookie is being set without the HttpOnly flag. Cookies containing
+      authentication tokens or session identifiers that are accessible to JavaScript
+      can be stolen via Cross-Site Scripting (XSS), enabling session hijacking or
+      persistent account takeover. Set the HttpOnly attribute and avoid exposing
+      sensitive tokens to client-side code.
+    pattern-either:
+      - patterns:
+        - pattern: res.cookie("$SECRETSTR", ...)
+        - pattern-not: |
+            res.cookie(..., {..., httpOnly: true, ...})
+        - metavariable-regex:
+            metavariable: $SECRETSTR
+            regex: (refresh_token|access_token|id_token|auth_token|session|sessionid|sid|jwt|bearer|authorization|secret|api_key|apikey|key|csrf|xsrf|_csrf|_xsrf|remember_me|rememberme|sso|oauth|credential|cred|private)
+    metadata:
+      category: security
+      subcategory:
+        - session-management
+        - misconfiguration
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      technology:
+        - nodejs
+        - express
+        - javascript
+        - typescript
+      vulnerability_class:
+        - insecure-cookie
+      cwe:
+        - CWE-1004   # Sensitive Cookie Without 'HttpOnly' Flag
+        - CWE-79     # Cross-Site Scripting (XSS)
+      owasp:
+        - A07:2021   # Identification and Authentication Failures
+      tags:
+        - httponly
+        - cookies
+        - session
+        - authentication
+        - xss
+        - account-takeover

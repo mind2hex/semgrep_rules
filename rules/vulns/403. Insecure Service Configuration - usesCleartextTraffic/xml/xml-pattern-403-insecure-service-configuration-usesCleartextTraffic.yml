@@ -1,0 +1,27 @@
+rules:
+  - id: xml-pattern-403-insecure-service-configuration-usesCleartextTraffic
+    languages:
+      - xml
+    severity: WARNING
+    message: >
+      Cleartext HTTP traffic is explicitly enabled via
+      `android:usesCleartextTraffic="true"`.
+      This allows unencrypted network communication, which may expose
+      sensitive data to interception or manipulation.
+      Disable cleartext traffic or restrict it using a Network Security
+      Configuration.
+    pattern: |
+      android:usesCleartextTraffic="true"
+    metadata:
+      category: security
+      subcategory:
+        - insecure-configuration
+      technology:
+        - android
+      cwe:
+        - "CWE-319"   # Cleartext Transmission of Sensitive Information
+      owasp:
+        - "M3: Insecure Communication"
+      confidence: HIGH
+      likelihood: MEDIUM
+      impact: LOW

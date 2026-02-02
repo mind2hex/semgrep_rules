@@ -1,0 +1,40 @@
+rules:
+  - id: generic-pattern-313-insecure-service-configuration-certificates-flutter
+    languages:
+      - generic
+    severity: WARNING
+    message: >
+      Insecure transport security configuration detected. The application disables
+      TLS certificate validation or iOS App Transport Security (ATS) protections.
+      This can allow Man-in-the-Middle (MITM) attacks, traffic interception, and
+      exposure of sensitive data. Avoid accepting all certificates and remove
+      ATS exceptions unless strictly required.
+    pattern-either:
+      - pattern: badCertificateCallback
+      - pattern: NSExceptionAllowsInsecureHTTPLoads
+      - pattern: NSAllowsArbitraryLoads
+      - pattern: NSAllowsArbitraryLoadsInWebContent
+    metadata:
+      category: security
+      subcategory:
+        - transport-security
+        - misconfiguration
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      technology:
+        - flutter
+        - ios
+      references:
+        - https://developer.apple.com/documentation/bundleresources/information_property_list/nsapptransportsecurity
+        - https://api.flutter.dev/flutter/dart-io/HttpClient/badCertificateCallback.html
+      cwe:
+        - CWE-295   # Improper Certificate Validation
+        - CWE-319   # Cleartext Transmission of Sensitive Information
+      owasp:
+        - A02:2021  # Cryptographic Failures
+      tags:
+        - mitm
+        - tls
+        - ats
+        - certificate-validation
