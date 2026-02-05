@@ -1,5 +1,5 @@
 rules:
-  - id: java-tainted-146-sql-injection
+  - id: java-taint-146-sql-injection
     languages:
       - java
     severity: HIGH

@@ -9,8 +9,10 @@ rules:
 
       req.url contains both path and query string, so partial matches or crafted
       parameters may allow authentication bypass.
-    patterns:
-      - pattern: req.url.includes($PATH)
+    pattern-either:
+      - pattern: $REQUEST.url?.includes($PATH)
+      - pattern: $REQUEST.url.includes($PATH)
+      
     metadata:
       category: security
       subcategory:

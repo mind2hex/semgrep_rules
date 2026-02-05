@@ -1,0 +1,37 @@
+rules:
+  - id: java-pattern-146-sql-injection-spring-data-jpa
+    languages:
+      - java
+    severity: HIGH
+    message: |
+      Possible SQL Injection in Spring Data JPA native query.
+      This @Query uses string concatenation to build SQL while nativeQuery=true,
+      which bypasses prepared statement protections and may allow attacker-controlled
+      input to modify the executed SQL. Use named parameters (:param) without string
+      concatenation.
+
+    patterns:
+      - pattern-either:
+          # string concatenation
+          - pattern-inside: |
+              @Query(..., nativeQuery=true)
+              $RETURN $X(..., @Param(...) String $PARAM, ...)
+          - pattern: |
+              "$SQLSTR" + $PARAM
+      
+      - metavariable-regex:
+          metavariable: $SQLSTR
+          regex: 
+              "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
+
+    metadata:
+        category: security
+        subcategory:
+            - vuln
+        cwe:
+            - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+        confidence: MEDIUM
+        likelihood: MEDIUM
+        impact: HIGH
+        owasp:
+            - A3:2021 Injection
