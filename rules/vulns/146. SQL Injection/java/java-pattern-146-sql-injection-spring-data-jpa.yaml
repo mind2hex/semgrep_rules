@@ -12,7 +12,8 @@ rules:
 
     patterns:
       - pattern-inside: |
-          @Query(value=..., nativeQuery=true)
+          @Query(value=..., ...)
+
       - pattern: |
           $SQL + $SINK
       - metavariable-regex:
