@@ -11,18 +11,18 @@ rules:
       concatenation.
 
     patterns:
-      - pattern-either:
-          # string concatenation
-          - pattern-inside: |
-              @Query(..., nativeQuery=true)
-              $RETURN $X(..., @Param(...) String $PARAM, ...)
-          - pattern: |
-              "$SQLSTR" + $PARAM
-      
+      - pattern-inside: |
+          @Query(value=..., nativeQuery=true)
+      - pattern: |
+          $SQL + $SINK
       - metavariable-regex:
-          metavariable: $SQLSTR
-          regex: 
-              "(?i)(?i)^\\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|FILTER|CAUSE|CONDITION|@[A-Z_]*) .*"
+          metavariable: $SINK
+          regex: '^[a-zA-Z_][a-zA-Z0-9_]*$'
+      - metavariable-regex:
+          metavariable: $SINK
+          regex: '^(?!:).*$'
+      - focus-metavariable: $SINK
+
 
     metadata:
         category: security
