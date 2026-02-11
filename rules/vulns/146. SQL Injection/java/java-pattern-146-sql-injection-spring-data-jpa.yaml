@@ -13,7 +13,6 @@ rules:
     patterns:
       - pattern-inside: |
           @Query(value=..., ...)
-
       - pattern: |
           $SQL + $SINK
       - metavariable-regex:

@@ -108,6 +108,18 @@ public int Ffoo(String param1, Object param2, long param3) {
     result = query.executeUpdate();
     return result;
 }
+
+// EXAMPLE 8
+public void buscar(UcmRequest req) {
+    // ruleid: java-taint-146-sql-injection
+    value = """
+            select * from merchant
+            where uuid = '%s'
+            """.formatted(req.uuid);
+
+}
+
+
 public void buscar(UcmRequest req) {
 
     IdcBinder binder = cliente.createBinder();

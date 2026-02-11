@@ -31,6 +31,12 @@ rules:
       - pattern-not: |
           [Authorize(...)]
           $RETURNTYPE $FUNC(...) {...}
+          
+      - pattern-not-inside: |
+          [Authorize]
+          class $CLASS{ ... }
+
+      
     metadata:
       category: security
       subcategory:

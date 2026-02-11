@@ -66,6 +66,8 @@ rules:
                     - focus-metavariable: $SINK
                 - pattern: |
                     $FOO("$SQLSTR").append(...)
+                - pattern: |
+                    """$SQLSTR""".formatted($SINK)
             - metavariable-regex:
                 metavariable: $SQLSTR
                 regex: 
