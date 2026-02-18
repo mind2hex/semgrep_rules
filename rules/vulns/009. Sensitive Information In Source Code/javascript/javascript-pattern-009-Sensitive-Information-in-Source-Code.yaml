@@ -4,8 +4,40 @@ rules:
       - javascript
       - typescript
     severity: INFO
+    paths:
+      exclude:
+        # Mocks (en cualquier directorio)
+        - "**/*.mock.*"
+        - "**/__mocks__/**"
+
+        # Tests por nombre de archivo (Jest/Vitest/Mocha)
+        - "**/*.test.*"
+        - "**/*.spec.*"
+        - "**/*.unit.*"
+        - "**/*.integration.*"
+        - "**/*.e2e.*"
+
+        # Directorios típicos de tests
+        - "**/__tests__/**"
+        - "**/test/**"
+        - "**/tests/**"
+        - "**/testing/**"
+
+        # Frameworks e2e comunes
+        - "**/cypress/**"
+        - "**/playwright/**"
+
+        # Snapshots
+        - "**/__snapshots__/**"
+
+        # (Opcional) Artefactos de build
+        - "**/dist/**"
+        - "**/build/**"
+        - "**/coverage/**"
+        - "**/node_modules/**"
+
     message: The source code repository contains sensitive information such as
-      usernames, passwords, email addresses and IP addresses, among others.
+      usernames, passwords, email addresses and IP addresses, amon  g others.
       Alternatively, while values may be password=123 o aws.secret_key=test,
       they reveal the bad practice of storing sensitive information in the
       repository with no encryption, and sooner or later they can be replaced
@@ -19,7 +51,9 @@ rules:
         - pattern: |
             $STR: "..."
         - pattern-not: |
-            $STR: {...} 
+            $STR: {...}
+        - pattern-not: |
+            $STR: ''
         - metavariable-regex:
             metavariable: $STR
             regex: (user|username|pass|password|database|server)

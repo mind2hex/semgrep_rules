@@ -1,0 +1,33 @@
+rules:
+  - id: xml-pattern-238-technical-information-leak-api-wcf-metadata-exposure
+    languages:
+      - xml
+    severity: WARNING
+    message: >
+      WCF service metadata publishing is enabled
+      (httpGetEnabled/httpsGetEnabled=true). This may expose service metadata
+      (e.g., WSDL) and leak technical information. Disable metadata publishing
+      in production unless strictly required.
+    metadata:
+      category: security
+      cwe:
+        - "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      technology:
+        - wcf
+        - soap
+        - xml
+      confidence: medium
+      likelihood: medium
+      impact: low
+      references:
+        - https://learn.microsoft.com/en-us/dotnet/framework/wcf/diagnostics/metadata
+        - https://learn.microsoft.com/en-us/dotnet/framework/wcf/feature-details/publishing-metadata
+      subcategory:
+        - audit
+    pattern-either:
+      - pattern: |
+          <serviceMetadata httpGetEnabled="true" httpsGetEnabled="true"/>
+      - pattern: |
+          <serviceMetadata httpGetEnabled="true"/>
+      - pattern: |
+          <serviceMetadata httpsGetEnabled="true"/>

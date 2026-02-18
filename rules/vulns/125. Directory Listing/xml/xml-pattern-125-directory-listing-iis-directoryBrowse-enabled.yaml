@@ -1,0 +1,30 @@
+rules:
+  - id: xml-pattern-125-directory-listing-iis-directoryBrowse-enabled
+    languages:
+      - xml
+    severity: WARNING
+    message: |
+      Directory browsing is enabled (directoryBrowse enabled="true"). This may expose internal files, configuration artifacts, and sensitive resources. Disable directory listing in production environments.
+    metadata:
+      category: security
+      cwe:
+        - "CWE-548: Exposure of Information Through Directory Listing"
+        - "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      technology:
+        - iis
+        - asp.net
+        - wcf
+        - xml
+      confidence: high
+      likelihood: medium
+      impact: medium
+      references:
+        - https://learn.microsoft.com/en-us/iis/configuration/system.webserver/directorybrowse/
+      tags:
+        - directory-listing
+        - misconfiguration
+        - information-disclosure
+    pattern-either:
+      # Keep existing pattern
+      - pattern: |
+          <directoryBrowse enabled="true" />

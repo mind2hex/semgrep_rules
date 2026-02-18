@@ -2,7 +2,7 @@ rules:
   - id: csharp-taint-146-sql-injection
     languages:
       - csharp
-    severity: ERROR
+    severity: HIGH
     message: >
       Dynamic SQL statements are generated without the required data validation
       and without using parameterized statements or stored procedures.
@@ -10,6 +10,7 @@ rules:
       - pattern-either:
           - patterns:
               - pattern: $RETURNTYPE $FUNC(..., $SOURCE, ...) {...}
+              - pattern-not: $RETURNTYPE $FUNC(..., int $SOURCE, ...){...}
               - focus-metavariable: $SOURCE
       - pattern-either:
           - pattern: Request.QueryString[$SOURCE]
@@ -48,7 +49,12 @@ rules:
               - patterns:
                   - pattern: $"$SQLSTR{$SINK}..."
                   - focus-metavariable: $SINK
-              - pattern: StringBuilder.Append("$SQLSTRING")
+              - pattern: |
+                    StringBuilder $STRINGBUILDER = new StringBuilder();
+                    ...
+                    $STRINGBUILDER.Append("$SQLSTR");
+                    ...
+                    $STRINGBUILDER.Append($SINK);
               - patterns:
                   - pattern: '"$SQLSTR".Replace(..., $SINK)'
                   - focus-metavariable: $SINK

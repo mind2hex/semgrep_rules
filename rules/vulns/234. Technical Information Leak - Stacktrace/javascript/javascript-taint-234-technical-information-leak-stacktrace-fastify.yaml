@@ -1,0 +1,60 @@
+rules:
+  - id: javascript-taint-234-technical-information-leak-stacktrace-fastify
+    languages:
+      - javascript
+      - typescript
+    message: >
+      Possible information disclosure: returning `FastifyError.stack` in an HTTP response
+      may expose sensitive internal details (file paths, implementation logic, or
+      infrastructure data). Avoid sending stack traces to clients. Log the error
+      internally and return a generic error message instead.
+    severity: WARNING
+    mode: taint
+    pattern-sources:
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              function $X(..., $STACKERR: FastifyError, ...) {
+                ...
+              }
+          
+          - pattern: |
+              $X = (..., $STACKERR: FastifyError, ...) => {...}
+        - focus-metavariable: $STACKERR
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              return {
+                ...,
+                $FOO: $Y ?? $STACKERR.stack,
+                ...
+              }
+          - pattern: |
+              return {
+                ...,
+                $FOO: $STACKERR.stack,
+                ...
+              }
+        - focus-metavariable: $STACKERR
+    metadata:
+      category: security
+      technology:
+        - fastify
+        - nodejs
+      cwe:
+        - "CWE-209: Generation of Error Message Containing Sensitive Information"
+        - "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      owasp:
+        - "A05:2021 - Security Misconfiguration"
+      confidence: HIGH
+      impact: MEDIUM
+      likelihood: MEDIUM
+      references:
+        - https://owasp.org/www-community/Improper_Error_Handling
+        - https://cwe.mitre.org/data/definitions/209.html
+      remediation: >
+        Do not expose `error.stack` in API responses. Instead, log the full error
+        details on the server side and return a sanitized, generic message such as
+        "Internal Server Error" to the client. Consider enabling detailed errors
+        only in non-production environments.

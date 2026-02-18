@@ -1,0 +1,25 @@
+rules:
+  - id: xml-pattern-234-technical-information-leak-stacktrace-wcf-includeExceptionDetailInFaults-enabled
+    languages:
+      - xml
+    severity: WARNING
+    message: |
+      WCF is configured to include exception details in SOAP faults (includeExceptionDetailInFaults="true"), which can leak stack traces and sensitive technical information. Disable this setting in production.
+    metadata:
+      category: security
+      cwe:
+        - "CWE-209: Generation of Error Message Containing Sensitive Information"
+        - "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      technology:
+        - wcf
+        - soap
+        - xml
+      confidence: medium
+      likelihood: medium
+      impact: medium
+      references:
+        - https://learn.microsoft.com/en-us/dotnet/framework/wcf/diagnostics/tracing/configuring-service-behaviors
+        - https://learn.microsoft.com/en-us/dotnet/framework/wcf/diagnostics/metadata
+    pattern-either:
+      - pattern: |
+          <serviceDebug includeExceptionDetailInFaults="true"/>

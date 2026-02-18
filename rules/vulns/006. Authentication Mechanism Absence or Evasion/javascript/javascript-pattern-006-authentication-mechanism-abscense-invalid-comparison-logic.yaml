@@ -1,0 +1,37 @@
+rules:
+    - id: javascript-pattern-006-authentication-mechanism-abscense-invalid-comparison-logic
+      languages:
+        - javascript
+        - typescript
+      severity: ERROR
+      message: >
+        Insecure authentication logic: credentials are validated with OR (||).
+        This can allow authentication when only one condition matches (username OR password).
+        Use AND (&&) and validate both credentials together.
+      pattern-either:
+        - patterns:
+            - pattern:
+                if ($USER === $USERNAME || $PASS === $PASSWORD){
+                    ...
+                }
+
+            - metavariable-regex:
+                metavariable: $USER
+                regex: .*(user|username).*
+
+            - metavariable-regex:
+                metavariable: $PASS
+                regex: .*(pass|password).*
+      metadata:
+        category: security
+        technology:
+            - javascript
+            - typescript
+            - nodejs
+        cwe:
+            - "CWE-287: Improper Authentication"
+        owasp:
+            - "A07:2021 - Identification and Authentication Failures"
+        confidence: HIGH
+        likelihood: HIGH
+        impact: HIGH

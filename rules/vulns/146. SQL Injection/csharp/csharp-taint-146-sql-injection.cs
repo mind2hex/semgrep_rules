@@ -39,15 +39,14 @@ public Order GetOrderById(int orderId, string customerEmail){
 
 // VULNERABLE: StringBuilder
 public DataTable GetFilteredData(string tableName, string whereClause){
+    // ruleid: csharp-taint-146-sql-injection
     StringBuilder queryBuilder = new StringBuilder();
-    // todoruleid: csharp-taint-146-sql-injection
     queryBuilder.Append("SELECT * FROM ");
     queryBuilder.Append(tableName);
-    
     if (!string.IsNullOrEmpty(whereClause))
     {
         queryBuilder.Append(" WHERE ");
-        // todoruleid: csharp-taint-146-sql-injection
+        
         queryBuilder.Append(whereClause);
     }
     
@@ -60,8 +59,7 @@ public DataTable GetFilteredData(string tableName, string whereClause){
 // VULNERABLE: Stored procedure con EXEC dinámico
 public void UpdateUserRole(string username, string newRole){
     // ruleid: csharp-taint-146-sql-injection
-    string query = "EXEC sp_UpdateRole @sql = 'UPDATE Users SET Role = ''" + 
-                   newRole + "'' WHERE Username = ''" + username + "'''";
+    string query = "EXEC sp_UpdateRole @sql = 'UPDATE Users SET Role = ''" + newRole + "'' WHERE Username = ''" + username + "'''";
     
     using (SqlCommand cmd = new SqlCommand(query, connection))
     {
@@ -102,4 +100,15 @@ public void DisplayGreeting(userInput)
     string sqlstring="SELECT ccnum" + " FROM cust WHERE id=REPL";
     // ruleid: csharp-taint-146-sql-injection
     string sqlstring2 = sqlstring.Replace("REPL",userInput);
+}
+
+
+// FP1: LINQ con ExecuteQuery
+public IEnumerable<Customer> SearchCustomers(int city)
+{
+    using (var context = new DataContext(connectionString))
+    {   // ok: csharp-taint-146-sql-injection
+        string query = "SELECT * FROM Customers WHERE City = '" + city + "'";
+        return context.ExecuteQuery<Customer>(query);
+    }
 }
