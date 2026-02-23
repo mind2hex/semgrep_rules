@@ -1,0 +1,56 @@
+rules:
+  - id: javascript-taint-184-lack-of-data-validation-zpl-injection
+    languages:
+      - javascript
+      - typescript
+    message: >
+      Possible ZPL injection: untrusted input is being concatenated into a ZPL label
+      template. If attacker-controlled data reaches ZPL commands (e.g. ^XA, ^FD, ^XZ),
+      it may alter the printed label content, inject new fields, or manipulate printer
+      behavior. Validate and sanitize input before building ZPL strings.
+    severity: MEDIUM
+    mode: taint
+
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  function $X(..., $SOURCE, ...) {
+                    ...
+                  }
+              - pattern: |
+                  $X = (..., $SOURCE, ...) => {...}
+          - focus-metavariable: $SOURCE
+
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              `$ZPLSTR${...}...`
+          - metavariable-regex:
+              metavariable: $ZPLSTR
+              regex: (?i)^\s*(\^XA|\^XFE\:|\^FN1\^FD|\^FN2\^FD|\^FN3\^FD|\^FN4\^FD|\^FN5\^FD|\^FN6\^FD).*
+
+    metadata:
+      category: security
+      technology:
+        - nodejs
+        - zpl
+        - zebra
+      cwe:
+        - "CWE-20: Improper Input Validation"
+        - "CWE-74: Improper Neutralization of Special Elements in Output Used by a Downstream Component ('Injection')"
+      owasp:
+        - "A03:2021 - Injection"
+      confidence: MEDIUM
+      impact: MEDIUM
+      likelihood: MEDIUM
+      references:
+        - https://owasp.org/Top10/A03_2021-Injection/
+        - https://cwe.mitre.org/data/definitions/20.html
+        - https://cwe.mitre.org/data/definitions/74.html
+      remediation: >
+        Treat ZPL as a command language and never concatenate untrusted input directly
+        into ZPL templates. Validate input with strict allowlists (length, charset,
+        expected format) and escape or remove ZPL control sequences such as '^' and '~'
+        from user-controlled fields. Prefer parameterized templates where only safe
+        text is injected into ^FD fields.

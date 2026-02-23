@@ -20,29 +20,27 @@ rules:
       - pattern: request.body
       - pattern: request.query
       - pattern: request.params
-      - patterns: 
-        - pattern: function $FUNC(..., $SINK, ...)
-        - focus-metavariable: $SINK
       - patterns:
-          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
-          - focus-metavariable: $PARAM
-      - patterns:
+        - pattern-either:
+          - pattern: function $FUNC(..., $SOURCE, ...)
+          - pattern: const $FUNC = function (..., $SOURCE, ...) { ... }
           - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
-          - focus-metavariable: $SOURCE
-      - patterns:
           - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
-          - focus-metavariable: $SOURCE
+        - focus-metavariable: $SOURCE
     
     pattern-sanitizers:
       - pattern: path.basename(...)
 
     pattern-sinks:
-        # POSSIBLE FILENAME CREATIONS SINKS
+        # FILENAME CREATIONS SINKS
         - patterns:
-            - pattern-either:
-                - pattern: filename = `...`
+          - pattern-either:
+            - pattern: $FILENAME = ...
+          - metavariable-regex:
+              metavariable: $FILENAME
+              regex: (file(name)?|file_path|filepath|path|fileName|filePath|upload(ed)?File|docname?|attachment|report|output(file)?|input(file)?|csv(file)?|pdffile?|image(file)?|img(file)?|logfile?|archive|zip(file)?)
 
-        # FILE SINKS
+        # FILE OPERATIONS FUNCTIONS SINK
         - patterns: 
             - pattern-either:
                 - pattern: path.join(..., $SINK)
@@ -59,18 +57,27 @@ rules:
                 - pattern: $RES.sendFile($SINK)
             - focus-metavariable: $SINK
         
-        # URL SINKS
-        - patterns:
-            - pattern-either:
-                - pattern: $AXIOS.$METHOD(`...${$SINK}`, ...)
-                - pattern: $AXIOS.$METHOD(`...${$SINK}...`, ...)
-            - focus-metavariable: $SINK
-            - metavariable-regex:
-                metavariable: $METHOD
-                regex: (get|post|put)
-            - metavariable-regex:
-                metavariable: $AXIOS
-                regex: (axios|axiosMonitorV1)
+        # URL CREATIONS SINKS
+        - pattern-either:
+            - patterns:
+              - pattern-either:
+                  - pattern: $AXIOS.$METHOD(`...${$SINK}`, ...)
+                  - pattern: $AXIOS.$METHOD(`...${$SINK}...`, ...)
+              - focus-metavariable: $SINK
+              - metavariable-regex:
+                  metavariable: $METHOD
+                  regex: (get|post|put)
+              - metavariable-regex:
+                  metavariable: $AXIOS
+                  regex: (axios|axiosMonitorV1)
+            
+            - patterns:
+              - pattern-either:
+                - pattern: $URL = ...
+              - metavariable-regex:
+                  metavariable: $URL
+                  regex: (url|uri|link|href|endpoint|baseurl|base_url|apiurl|api_url|callback(url)?|redirect(url)?|return(url)?|target(url)?|requesturl?|service(url)?|host|origin|webhook(url)?|resource(url)?)
+
     metadata:
       category: security
       subcategory:
