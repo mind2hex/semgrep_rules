@@ -1,5 +1,5 @@
 rules:
-  - id: javascript-pattern-134-insecure-or-unset-http-headers-cors
+  - id: javascript-pattern-134-insecure-cors-config
     languages:
       - javascript
       - typescript
@@ -13,6 +13,9 @@ rules:
             cors: {...}
         - pattern: |
             origin: '*'
+      
+      - pattern: |
+          $APP.register(cors);
 
     metadata:
       category: security

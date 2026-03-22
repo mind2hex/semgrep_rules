@@ -1,0 +1,68 @@
+rules:
+  - id: ruby-taint-146-sql-injection
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      Dynamic SQL statements are generated without the required data validation
+      and without using parameterized statements or stored procedures.
+    mode: taint
+    paths:
+      exclude:
+        - "*spec.rb"
+    pattern-sources:
+      - pattern: params
+      - pattern: cookies
+      - pattern: request.body
+      - pattern: request.headers
+      - patterns:
+        - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+        - focus-metavariable: $SOURCE
+      - patterns:
+        - pattern-inside: |
+            class $CONTROLLER < ApplicationController
+              ...
+            end
+        - pattern: |
+            ...
+            def $FUN1
+              $SINK = $FUN2
+              ...
+            end
+            ...
+            def $FUN2
+              params[:$SRC]
+            end
+            ...
+        - focus-metavariable: $FUN2
+    pattern-sinks:
+      - patterns:
+        - pattern-inside: "..."
+        - pattern: $X
+        - metavariable-regex:
+            metavariable: $X
+            regex: .* (=|LIKE) '[%]{0,1}#\{.*\}[%]{0,1}'
+
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              "$SQLSTR" + ...
+          - pattern: |
+              "$SQLSTR#{...}..."
+        - metavariable-regex:
+            metavariable: $SQLSTR
+            regex: (?i)(?i)^\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|LIKE|FILTER|CAUSE|CONDITION|@[A-Z_]*|upper[(].*[)]) .*
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - nodejs

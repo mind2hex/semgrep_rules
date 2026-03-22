@@ -1,0 +1,43 @@
+rules:
+  - id: json-pattern-147-sql-injection-node-red
+    languages: [json]
+    message: >
+      Possible SQL injection in Node-RED: SQL query is built dynamically (JSONata/JS string concat)
+      using msg/flow/global data and written to msg.topic/msg.query.
+    severity: CRITICAL
+
+    pattern-either:
+      - patterns:
+          - pattern-inside: |
+              "rules": [{...}]
+          - pattern: |
+              "to": "$SINK"
+          - metavariable-regex:
+              metavariable: $SINK
+              regex: .*(flow|msg|global)\..*
+      - patterns:
+          - pattern-inside: |
+              {
+                "type":"postgresql",
+                ...
+              }
+          - pattern: |
+              "query": "$SINK"
+          - metavariable-regex:
+              metavariable: $SINK
+              regex: .*(flow|msg|global)\..*
+
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+          Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      owasp:
+        - A3:2021 Injection
+      technology:
+        - node-red

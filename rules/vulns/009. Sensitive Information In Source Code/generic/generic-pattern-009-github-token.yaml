@@ -1,5 +1,5 @@
 rules:
-  - id: generic-pattern-009-sensitive-information-in-source-code-github-token
+  - id: generic-pattern-009-github-token
     languages:
       - generic
     severity: WARNING

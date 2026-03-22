@@ -1,0 +1,83 @@
+rules:
+  - id: javascript-pattern-006-prototype-property-access
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: >
+      Potential authentication bypass via unsafe dynamic property access. Using
+      user-controlled input to validate access with patterns like `$OBJ[$REQ]`,
+      `$REQ in $OBJ`, or comparisons against `undefined/null` can allow
+      prototype property access (e.g., `__proto__`, `constructor`) and lead to
+      authentication or authorization bypass. Use `Object.hasOwn()`,
+      `Object.prototype.hasOwnProperty.call()`, `Map.prototype.has()`, or
+      objects created with `Object.create(null)` to safely validate keys.
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: function $FOO($REQ, $RES, next){...}
+          - focus-metavariable: $REQ
+    metadata:
+      category: security
+      technology:
+        - javascript
+        - typescript
+        - nodejs
+        - express
+      cwe:
+        - "CWE-287: Improper Authentication"
+        - "CWE-20: Improper Input Validation"
+        - "CWE-1321: Improperly Controlled Modification of Object Prototype
+          Attributes ('Prototype Pollution')"
+      owasp:
+        - A07:2021 – Identification and Authentication Failures
+      impact: >
+        An attacker may supply special property names such as "__proto__" or
+        "constructor" to bypass authentication or authorization checks.
+      likelihood: High
+      confidence: Medium
+      references:
+        - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn
+        - https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/
+      vulnerability_class:
+        - Authentication Bypass
+        - Prototype Property Abuse
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: | # if ($OBJ[$REQ])
+                  if ($OBJ[$REQ]){
+                    ...
+                    return next();
+                  }
+              - pattern: | # if (!$OBJ[$REQ])
+                  if (!$OBJ[$REQ]){
+                    ...
+                    return $RES.status(401).json(...)
+                  }
+              - pattern: | # if ($OBJ[$REQ] == undefined)
+                  if ($OBJ[$REQ] == undefined){
+                    ...
+                    return $RES.status(401).json(...)
+                  }
+              - pattern: | # if ($OBJ[$REQ] !== undefined)
+                  if ($OBJ[$REQ] !== undefined) next();
+              - pattern: | # if ($OBJ[$REQ] != null)
+                  if ($OBJ[$REQ] != null){
+                    ...
+                    return next();
+                  }
+              - pattern: | # if (!!$OBJ[$REQ])
+                  if (!!$OBJ[$REQ]){
+                    ...
+                  } else {
+                    ...
+                    return $RES.sendStatus(401);
+                  }
+              - pattern: | # $OBJ[$REQ] ? ... : ...
+                  return $OBJ[$REQ] ? next() : $RES.sendStatus(401);
+              - pattern: | # if (typeof $OBJ[$REQ] !== "undefined")
+                  if (typeof $OBJ[$REQ] !== "undefined") next();
+              - pattern: | # if (!($REQ in $OBJ)) return $RES.sendStatus(401);
+                  if (!($REQ in $OBJ)) return $RES.sendStatus(401);
+          - focus-metavariable: $REQ

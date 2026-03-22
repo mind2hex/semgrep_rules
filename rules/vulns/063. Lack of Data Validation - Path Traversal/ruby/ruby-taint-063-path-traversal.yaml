@@ -1,0 +1,63 @@
+rules:
+  - id: ruby-taint-063-path-traversal
+    languages:
+      - ruby
+    severity: HIGH
+    paths:
+      exclude:
+        - "*spec.rb"
+        - "*test.rb"
+    message: >
+      Untrusted user input is used to construct a filesystem path that is later
+      accessed by the application. This may allow an attacker to perform a path
+      traversal attack (e.g., using `../`) to read, modify, or delete files
+      outside the intended directory.
+    mode: taint
+
+    pattern-sources:
+      - pattern: params
+      - pattern: cookies
+      - pattern: request.body
+      - pattern: request.headers
+      - patterns:
+        - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+        - focus-metavariable: $SOURCE
+
+    pattern-sinks:
+      - pattern: File.read(...)
+      - pattern: File.open(...)
+      - pattern: File.binread(...)
+      - pattern: File.write
+      - pattern: File.delete 
+      - pattern: File.unlink
+      - pattern: File.exist?(...)
+      - pattern: File.file?(...)
+      - pattern: File.directory?(...)
+
+      - pattern: IO.read(...)
+      - pattern: Pathname.new(...)
+      - pattern: send_file(...)
+      - pattern: send_data(...)
+      - pattern: Dir.glob(...)
+      - pattern: Dir.entries
+      - pattern: YAML.load_file(...)
+      - pattern: CSV.read(...)
+      - pattern: FileUtils.cp(...)
+      - pattern: FileUtils.mv(...)
+      - pattern: Tempfile.new(...)
+      
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+      owasp:
+        - "A5:2021 Security Misconfiguration"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: HIGH
+      technology:
+        - ruby
+      vulnerability_class:
+        - path-traversal

@@ -1,5 +1,5 @@
 rules:
-  - id: generic-pattern-009-sensitive-information-in-source-code-gmail-address
+  - id: generic-pattern-009-gmail-address
     languages:
       - generic
     severity: WARNING

@@ -1,0 +1,45 @@
+rules:
+  - id: javascript-pattern-085-sensitive-information-in-sessionStorage
+    severity: CRITICAL
+    message: Sensitive information (e.g., tokens, API keys, passwords, or secrets) should not be stored in or retrieved from sessionStorage, as it may be exposed to client-side attacks such as XSS.
+    paths:
+      exclude:
+        - "*.tsx"
+        - "*.jsx"
+        - "*.test.*"
+        - "*.spec.*"
+        - "*.unit.*"
+        - "*.integration.*"
+        - "*.e2e.*"
+        - "**/__tests__/**"
+        - "**/test/**"
+        - "**/tests/**"
+        - "**/testing/**"
+    metadata:
+      category: security
+      technology:
+        - javascript
+        - typescript
+      cwe:
+        - "CWE-922: Insecure Storage of Sensitive Information"
+      owasp:
+        - "A2:2021 – Cryptographic Failures"
+      impact: |
+        Storing sensitive data such as tokens, credentials, or API keys in sessionStorage exposes them to client-side attacks, especially cross-site scripting (XSS). Attackers may retrieve these values and impersonate users or access protected resources.
+      likelihood: MEDIUM
+      confidence: MEDIUM
+      references:
+        - https://owasp.org/www-project-top-ten/
+        - https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html
+        - https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html
+    languages:
+      - javascript
+      - typescript
+    pattern-either:
+      - patterns:
+        - pattern-either:
+          - pattern: sessionStorage.getItem($X);
+          - pattern: sessionStorage.setItem($DST, $X);
+        - metavariable-regex:
+            metavariable: $X
+            regex: (?i).*(token|access[_-]?token|session[_-]?token|id[_-]?token|secret|api[_-]?key|apikey|auth[_-]?token|bearer|jwt|password|passwd|pwd|client[_-]?secret).*

@@ -1,9 +1,22 @@
 rules:
-  - id: javascript-pattern-006-authentication-mechanism-absence-or-evasion-req-url-includes
+  - id: javascript-pattern-006-req-url-includes
     languages:
       - javascript
       - typescript
     severity: HIGH
+    paths:
+      exclude:
+        - "*.tsx"
+        - "*.jsx"
+        - "*.test.*"
+        - "*.spec.*"
+        - "*.unit.*"
+        - "*.integration.*"
+        - "*.e2e.*"
+        - "**/__tests__/**"
+        - "**/test/**"
+        - "**/tests/**"
+        - "**/testing/**"
     message: >
       Insecure access control using req.url.includes.
 

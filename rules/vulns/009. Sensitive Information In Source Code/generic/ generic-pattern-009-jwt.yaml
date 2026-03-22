@@ -1,5 +1,5 @@
 rules:
-  - id: generic-pattern-009-sensitive-information-in-source-code-jwt
+  - id: generic-pattern-009-jwt
     languages:
       - generic
     severity: WARNING

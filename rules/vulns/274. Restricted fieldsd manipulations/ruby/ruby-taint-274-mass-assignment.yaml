@@ -1,0 +1,49 @@
+rules:
+  - id: ruby-taint-274-mass-assignment
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Potential mass assignment vulnerability in Ruby on Rails. User-controlled
+      parameters may reach an Active Record attribute-assignment method without
+      strong parameter protection.
+    mode: taint
+
+    metadata:
+      category: security
+      technology:
+        - ruby
+        - rails
+      cwe:
+        - "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes"
+      owasp:
+        - "A01:2021 - Broken Access Control"
+      subcategory:
+        - vuln
+      likelihood: HIGH
+      impact: HIGH
+      confidence: MEDIUM
+      references:
+        - https://semgrep.dev/docs/writing-rules/data-flow/taint-mode/overview
+        - https://guides.rubyonrails.org/action_controller_overview.html#strong-parameters
+
+    pattern-sources:
+      - patterns:
+        - pattern: params
+        - pattern-inside: |
+            class $CONTROLLER < ApplicationController
+              ...
+            end
+        exact: true
+    
+    pattern-sanitizers:
+      - pattern: params.require(...).permit(...)
+        exact: true
+    
+    pattern-sinks:
+      - patterns:
+        - pattern: |
+            $MODEL.$ACTION(...)
+        - metavariable-regex:
+            metavariable: $ACTION
+            regex: (create|new|update|assign_attributes|update_attributes)

@@ -1,5 +1,5 @@
 rules:
-  - id: generic-pattern-313-insecure-service-configuration-certificates-flutter
+  - id: generic-pattern-313-insecure-transport-security-configuration-flutter-ios
     languages:
       - generic
     severity: WARNING

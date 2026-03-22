@@ -1,0 +1,44 @@
+rules:
+  - id: generic-pattern-313-certificate-verification-disabled-tls-configuration
+    languages:
+      - generic
+    severity: HIGH
+    message: >
+      Insecure TLS configuration detected: certificate verification is disabled.
+      Settings such as `validate_certificate_chain = false` or
+      `validate_certificate_name = false` bypass certificate validation, which can
+      enable Man-in-the-Middle (MITM) attacks, traffic interception, and data compromise.
+      Avoid disabling certificate checks; use trusted CAs and proper certificate
+      management instead.
+    pattern-either:
+      - patterns:
+          - pattern-inside: |
+              tls {
+                ...
+              }
+          - pattern-either:
+              - pattern: validate_certificate_chain = false
+              - pattern: validate_certificate_name  = false
+    metadata:
+      category: security
+      subcategory:
+        - transport-security
+        - certificate-validation
+        - misconfiguration
+      confidence: HIGH
+      likelihood: HIGH
+      impact: HIGH
+      cwe:
+        - "CWE-295: Improper Certificate Validation"
+      owasp:
+        - "A02:2021 – Cryptographic Failures"
+      vulnerability_class:
+        - Improper Certificate Validation
+        - Security Misconfiguration
+      references:
+        - https://owasp.org/Top10/A02_2021-Cryptographic_Failures/
+      tags:
+        - mitm
+        - tls
+        - certificate-validation
+        - insecure-transport
