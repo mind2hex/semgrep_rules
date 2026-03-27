@@ -1,0 +1,44 @@
+rules:
+  - id: php-pattern-094-use-of-cipher-block-chaining
+    languages:
+      - php
+    severity: HIGH
+    message: >
+      The application is configured to use AES-256-CBC. CBC mode is prone to
+      misuse and is generally discouraged for new designs. Prefer an
+      authenticated encryption mode such as AES-256-GCM or ChaCha20-Poly1305.
+    metadata:
+      category: security
+      technology:
+        - php
+      confidence: HIGH
+      impact: HIGH
+      likelihood: MEDIUM
+      subcategory:
+        - audit
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp:
+        - "A02:2021 - Cryptographic Failures"
+      vulnerability_class:
+        - Insecure Cryptography
+      references:
+        - "https://cwe.mitre.org/data/definitions/327.html"
+        - "https://owasp.org/Top10/A02_2021-Cryptographic_Failures/"
+        - "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html"
+      shortDescription: Insecure cipher mode configured
+      remediation: >
+        Replace AES-256-CBC with an authenticated encryption mode such as
+        AES-256-GCM or ChaCha20-Poly1305. If migration is not immediately
+        possible, review integrity protection, IV handling, and key management.
+    pattern-either:
+      - patterns:
+        - pattern: |
+            [..., $KEY => $VALUE, ...]
+        - metavariable-comparison:
+            metavariable: $KEY
+            comparison: $KEY == "cipher"
+        - metavariable-comparison:
+            metavariable: $VALUE
+            comparison: $VALUE == "AES-256-CBC"
+        - focus-metavariable: $VALUE

@@ -1,0 +1,46 @@
+rules:
+  - id: php-pattern-134-insecure-cors-config
+    languages:
+      - php
+    severity: HIGH
+    message: >
+      CORS is configured with a wildcard origin (*). This allows requests from
+      any origin and can expose application resources to unintended domains.
+      Restrict allowed_origins to a specific list of trusted origins.
+    metadata:
+      category: security
+      subcategory:
+        - audit
+      technology:
+        - php
+      vulnerability_class:
+        - Security Misconfiguration
+        - Insecure CORS Configuration
+      cwe:
+        - "CWE-942: Permissive Cross-domain Policy with Untrusted Domains"
+      owasp:
+        - "A05:2021 - Security Misconfiguration"
+      confidence: HIGH
+      impact: HIGH
+      likelihood: HIGH
+      shortDescription: Wildcard CORS origin allowed
+      description: >
+        The application allows any origin in the CORS configuration through
+        allowed_origins = ['*']. This can overly expose endpoints to cross-origin
+        access from untrusted domains.
+      remediation: >
+        Replace the wildcard origin with an explicit allowlist of trusted
+        origins. Review whether credentials, sensitive endpoints, and browser-
+        accessible APIs are protected appropriately.
+      references:
+        - "https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS"
+        - "https://owasp.org/Top10/A05_2021-Security_Misconfiguration/"
+        - "https://cwe.mitre.org/data/definitions/942.html"
+    pattern-either:
+      - patterns:
+        - pattern: |
+            [..., 'allowed_origins' => [..., $VALUE, ...], ...]
+        - metavariable-comparison:
+            metavariable: $VALUE
+            comparison: $VALUE == "*"
+        - focus-metavariable: $VALUE

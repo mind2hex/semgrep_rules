@@ -1,0 +1,81 @@
+rules:
+  - id: php-taint-404-os-command-injection
+    languages:
+      - php
+    severity: HIGH
+    message: >
+      User-controlled input reaches an OS command execution sink. This can lead
+      to command injection and arbitrary command execution on the underlying
+      system. Avoid building shell commands from untrusted input; use safe APIs,
+      strict allowlists, and escaping only as a last resort.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+        - audit
+      technology:
+        - php
+      vulnerability_class:
+        - OS Command Injection
+        - Injection
+      cwe:
+        - "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+        - "CWE-88: Improper Neutralization of Argument Delimiters in a Command ('Argument Injection')"
+      owasp:
+        - "A03:2021 - Injection"
+      confidence: HIGH
+      impact: HIGH
+      likelihood: HIGH
+      shortDescription: Untrusted input reaches command execution
+      description: >
+        This rule detects flows where user-controlled data reaches functions or
+        constructs that execute operating system commands. If untrusted input is
+        concatenated, interpolated, or otherwise passed into these sinks, an
+        attacker may execute arbitrary commands or alter command behavior.
+      remediation: >
+        Do not pass untrusted input into shell command APIs. Prefer native
+        library calls that avoid the shell entirely. When command execution is
+        strictly necessary, use fixed command templates, allowlist expected
+        values, pass arguments as structured arrays where supported, and apply
+        appropriate escaping for the target platform.
+      references:
+        - "https://cwe.mitre.org/data/definitions/78.html"
+        - "https://cwe.mitre.org/data/definitions/88.html"
+        - "https://owasp.org/Top10/A03_2021-Injection/"
+        - "https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html"
+      source-rule-url: "https://semgrep.dev/docs/writing-rules/data-flow/taint-mode/"
+    mode: taint
+    pattern-sources:
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_REQUEST
+      - pattern: $_COOKIE
+      - pattern: $_FILES
+      - pattern: $_SERVER
+      - pattern: request()->get(...)
+      - pattern: request()->input(...)
+      - pattern: file_get_contents("php://input")
+      - patterns: 
+        - pattern: function $FOO(..., $SRC, ...){...}
+        - focus-metavariable: $SRC
+      
+    pattern-sinks:
+      - pattern: system(...)
+      - pattern: exec(...)
+      - pattern: shell_exec(...)
+      - pattern: passthru(...)
+      - pattern: popen(...)
+      - pattern: pcntl_exec(...)
+      - pattern: expect_popen(...)
+      - pattern: new Process(...)
+      - pattern: Process::run(...)
+      - pattern: Process::fromShellCommandline(...)
+      - pattern: Runtime::exec(...)
+      - patterns: 
+        - pattern: mail(..., $SINK);
+        - focus-metavariable: $SINK
+      - patterns:
+        - pattern: proc_open($SINK, ...)
+        - focus-metavariable: $SINK
+      - pattern: |
+          `...$SINK...`
