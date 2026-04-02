@@ -1,0 +1,188 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+  confidence: MEDIUM
+  likelihood: LOW
+  impact: HIGH
+  owasp:
+    - A3:2021 Injection
+
+pattern-sources: &common_pattern_sources
+  - pattern: params
+  - pattern: cookies
+  - pattern: session
+  - pattern: request.headers
+  - pattern: request.body
+  - patterns:
+      - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*spec.rb"
+
+rules:
+  - id: ruby-taint-000-code-injection-eval
+    languages:
+      - ruby
+    severity: HIGH
+    message: "Untrusted data flows into Ruby's `eval`, which executes arbitrary Ruby source at runtime.
+      An attacker can run arbitrary code in your process. Do not pass user input to `eval`; use safer APIs.
+      If you must interpret data, use restricted parsers or whitelist allowed operations."
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: eval($SINK, ...)
+          - pattern: Kernel.eval($SINK, ...)
+          - pattern: send(:eval, $SINK)
+          - pattern: __send__(:eval, $SINK)
+          - pattern: method(:eval).call($SINK)
+          - pattern: Kernel.method(:eval).call($SINK)
+          - pattern: public_send(:eval, $SINK)
+          - pattern: ::Kernel.eval($SINK, ...)
+          - pattern: self.eval($SINK, ...)
+          - pattern: binding.eval($SINK, ...)
+        - focus-metavariable: $SINK
+  
+  - id: ruby-taint-000-code-injection-instance-eval
+    languages:
+      - ruby
+    severity: HIGH
+    paths: *common_paths
+    metadata: *common_metadata
+    message: "Untrusted data reaches `instance_eval`, which executes Ruby code with access to the object's context.
+      Attackers can run arbitrary code as if they were inside that object. Avoid `instance_eval` on user-controlled strings."
+    mode: taint
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: $OBJ.instance_eval($SINK, ...)
+          - pattern: instance_eval($SINK, ...)
+          - pattern: Object.instance_eval($SINK, ...)
+          - pattern: ::Object.instance_eval($SINK, ...)
+          - pattern: $OBJ.instance_eval { $SINK }
+          - pattern: $OBJ.send(:instance_eval, $SINK)
+          - pattern: $OBJ.__send__(:instance_eval, $SINK)
+          - pattern: $OBJ.public_send(:instance_eval, $SINK)
+          - pattern: $OBJ.method(:instance_eval).call($SINK)
+          - pattern: Kernel.method(:instance_eval).call($SINK)
+        - focus-metavariable: $SINK
+
+  - id: ruby-taint-000-code-injection-class-eval
+    languages:
+      - ruby
+    severity: HIGH
+    paths: *common_paths
+    metadata: *common_metadata
+    message: "Untrusted data is passed to `class_eval`, which defines methods or runs code in a class's scope.
+      That enables class-level code injection and persistence. Never base `class_eval` arguments on request or external input."
+    mode: taint
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: class_eval($SINK, ...)          
+          - pattern: class_eval { $SINK }
+          - pattern: send(:class_eval, $SINK)
+          - pattern: __send__(:class_eval, $SINK)
+          - pattern: public_send(:class_eval, $SINK)
+          - pattern: method(:class_eval).call($SINK)
+
+          - pattern: $CLASS.class_eval($SINK, ...)
+          - pattern: $CLASS.class_eval { $SINK }
+          - pattern: $CLASS.send(:class_eval, $SINK)
+          - pattern: $CLASS.__send__(:class_eval, $SINK)
+          - pattern: $CLASS.public_send(:class_eval, $SINK)
+          - pattern: $CLASS.method(:class_eval).call($SINK)
+        - focus-metavariable: $SINK
+
+  - id: ruby-taint-000-code-injection-erb
+    languages:
+      - ruby
+    severity: HIGH
+    paths: *common_paths
+    metadata: *common_metadata
+    message: "Untrusted content is used as an ERB template string (or `result`), so `<% %>` tags can execute arbitrary Ruby.
+      Treat template source as code, not as user text. Use fixed templates, escape output, or a non-executable templating policy."
+    mode: taint
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: ERB.new($SINK, ...)
+          - pattern: ERB.new($SINK, ...).result(...)
+          - pattern: ERB.new($SINK, ...).result_with_hash(...)
+
+  - id: ruby-taint-000-code-injection-send
+    languages:
+      - ruby
+    severity: HIGH
+    paths: *common_paths
+    metadata: *common_metadata
+    message: "The method name passed to `send`/`public_send` comes from untrusted data, so an attacker can invoke dangerous methods.
+      Restrict calls to a fixed allowlist of symbols or call concrete methods instead of dynamic `send`."
+    mode: taint
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: $OBJ.send($SINK, ...)
+          - pattern: send($SINK, ...)
+          - pattern: __send__(:send, $SINK)
+          - pattern: public_send(:send, $SINK)
+          - pattern: method(:send).call($SINK)
+          - pattern: Kernel.method(:send).call($SINK)
+        - focus-metavariable: $SINK
+
+  - id: ruby-taint-000-code-injection-module-eval
+    languages:
+      - ruby
+    severity: HIGH
+    paths: *common_paths
+    metadata: *common_metadata
+    message: "Untrusted data reaches `module_eval`, which runs Ruby inside a module or class body context.
+      That is equivalent to arbitrary code execution in that scope. Do not drive `module_eval` from user-supplied strings."
+    mode: taint
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: module_eval($SINK, ...)
+          - pattern: module_eval { $SINK }
+          - pattern: send(:module_eval, $SINK)
+          - pattern: __send__(:module_eval, $SINK)
+          - pattern: public_send(:module_eval, $SINK)
+          - pattern: method(:module_eval).call($SINK)
+          - pattern: Kernel.method(:module_eval).call($SINK)
+
+          - pattern: $MODULE.module_eval($SINK, ...)
+          - pattern: $MODULE.module_eval { $SINK }
+          - pattern: $MODULE.send(:module_eval, $SINK)
+          - pattern: $MODULE.__send__(:module_eval, $SINK)
+          - pattern: $MODULE.public_send(:module_eval, $SINK)
+          - pattern: $MODULE.method(:module_eval).call($SINK)
+        - focus-metavariable: $SINK
+
+  - id: ruby-taint-000-code-injection-dynamic-load
+    languages:
+      - ruby
+    severity: HIGH
+    paths: *common_paths
+    metadata: *common_metadata
+    message: "Dynamic `load` or `require` driven by application data can load attacker-chosen Ruby files or paths.
+      Resolve file paths from trusted configuration only; avoid using request parameters to pick what gets loaded."
+    mode: taint
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: load(...)
+          - pattern: require(...)

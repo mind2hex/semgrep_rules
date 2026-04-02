@@ -1,0 +1,119 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - audit
+  cwe:
+    - "CWE-540: Inclusion of Sensitive Information in Source Code"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: HIGH
+  references:
+    - https://docs.aws.amazon.com/cli/v1/topic/config-vars.html
+    - https://docs.aws.amazon.com/cli/v1/reference/sts/get-caller-identity.html
+    - https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_use-resources.html
+    - https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config
+    - https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+    - https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-external-config
+    - https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+
+rules:
+  - id: generic-pattern-009-aws-cloud-credentials
+    languages:
+      - generic
+    severity: ERROR
+    message: "**Possible AWS Cloud Credentials Found in Source Code** Storing AWS
+      credentials in plaintext within a repository is a **high-risk security
+      practice**, as it may allow unauthorized access to cloud resources
+      including S3 buckets, EC2 instances, IAM, and other AWS services."
+    pattern-regex: cloud.auth.aws_.*
+    metadata: *common_metadata
+
+  - id: generic-pattern-009-azure-trigger-signature
+    languages:
+      - generic
+    severity: ERROR
+    message: >
+      Possible Azure Logic App trigger signature (sig) exposed in source code.
+      This signature can be used to invoke the workflow without authentication.
+      https://learn.microsoft.com/en-us/community/content/secure-integration-workflows-azure-logic-apps-api-management
+    pattern-regex: |
+      https://.*&sig=.*
+    metadata: *common_metadata
+
+  - id: generic-pattern-009-github-token
+    languages:
+      - generic
+    severity: WARNING
+    message: |-
+      **Possible GitHub Personal Access Token (PAT) Found in Source Code**
+      This finding indicates that a **GitHub authentication token** (e.g. `ghp_...`) may be **hardcoded or exposed** in the repository.
+      GitHub tokens grant access to GitHub resources according to their scopes and, if leaked, may allow unauthorized actions such as reading private repositories, modifying code, accessing CI secrets, or performing API operations on behalf of the token owner.
+      To test the authenticity of the token, use the following command: `curl -H "Authorization: token <token>" https://api.github.com/user`
+    pattern-either:
+      - pattern-regex: ghp_[a-zA-Z0-9]*
+    metadata: *common_metadata
+
+  - id: generic-pattern-009-gmail-address
+    languages:
+      - generic
+    severity: WARNING
+    message: >
+      Possible hardcoded gmail address found in source code. Check if the email
+      exist trying to log in without introducing a password. Gmail will tell you
+      if the address exist or not.
+    patterns:
+      - pattern-regex: |
+          \b[a-zA-Z0-9][a-zA-Z0-9._%+-]*@gmail\.com\b
+      - pattern-not-regex: |
+          \b.*(example|test|testing|demo|sample|foo|bar|admin|user|username).*\@gmail\.com\b
+    metadata: *common_metadata
+
+  - id: generic-pattern-009-java-keystores
+    languages:
+      - generic
+    severity: WARNING
+    message: >-
+      **Potential Sensitive Configuration Detected in Spring `.properties` File**
+
+      This rule detected a configuration entry related to a **Java keystore**
+      (`keystorePath` or `keystorePassword`) inside a Spring `.properties` file.
+
+      Use the following command to view the content of the keytool:
+        `keytool -list -keystore {/keystore/path} -storepass {password}`
+    pattern-regex: certificate\.(keystorePath|keystorePassword)\s*=\s*.*
+    metadata: *common_metadata
+
+  - id: generic-pattern-009-jwt
+    languages:
+      - generic
+    severity: WARNING
+    message: |-
+      **Possible JWT Token Found in Source Code**
+      This finding indicates that a **JSON Web Token (JWT)** may be hardcoded or exposed in the repository.
+      Hardcoding JWTs in source code is **high-risk**, as these tokens can grant access to APIs, applications, or services depending on their scopes or claims.
+      Example (decoding header and payload):
+      ```bash
+      echo "<JWT>" | cut -d'.' -f1 | base64 --decode
+      echo "<JWT>" | cut -d'.' -f2 | base64 --decode
+      ```
+    pattern-regex: 'eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+'
+    metadata: *common_metadata
+
+  - id: generic-pattern-009-spring-credentials
+    languages: [generic]
+    severity: WARNING
+    message: >-
+      **Possible Sensitive Configuration Found in .properties File**
+      This finding indicates that a **Spring `.properties` file** may contain
+      **sensitive information** such as database credentials or connection URLs.
+    paths:
+      include:
+        - "*.properties"
+        - "**/*.properties"
+    patterns:
+      - pattern-regex: |
+          spring\.datasource\.(url|username|password)\s*=\s*[^\r\n]+
+      - pattern-not-regex: |
+          spring\.datasource\.(url|username|password)\s*=\s*\$\{[^}]+\}\s*(?:#.*)?(?:\r?\n|$)
+    metadata: *common_metadata
+        

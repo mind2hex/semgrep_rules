@@ -1,0 +1,295 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+    - audit
+  technology:
+    - ruby
+  vulnerability_class:
+    - Server-Side Request Forgery
+    - SSRF
+  cwe:
+    - "CWE-918: Server-Side Request Forgery (SSRF)"
+  owasp:
+    - "A10:2021 - Server-Side Request Forgery (SSRF)"
+  confidence: HIGH
+  impact: HIGH
+  likelihood: HIGH
+  shortDescription: Untrusted input flows into outbound request sinks
+  description: >
+    This rule detects tainted data flowing from user-controlled sources into
+    HTTP client APIs or into interpolated URL strings later used for network
+    access. If an attacker can influence the destination host, scheme, port,
+    or path, they may coerce the server into issuing requests to arbitrary
+    external or internal endpoints.
+  remediation: >
+    Do not build request destinations directly from untrusted input. Use
+    strict allowlists for hosts, schemes, ports, and paths. Resolve and
+    validate destinations after parsing, block internal and link-local IP
+    ranges, and avoid forwarding user-controlled URLs to generic HTTP
+    clients whenever possible.
+  references:
+    - "https://cwe.mitre.org/data/definitions/918.html"
+    - "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/"
+    - "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html"
+
+pattern-sources: &common_pattern_sources
+  - pattern: params
+  - pattern: cookies
+  - pattern: session
+  - pattern: request.headers
+  - pattern: request.body
+  - patterns:
+      - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*spec.rb"
+
+rules:
+  - id: ruby-taint-100-ssrf-uri-open
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: URI.open(...)
+      - pattern: ::URI.open(...)
+      - pattern: self.URI.open(...)
+      - pattern: send(:open, ...)
+      - pattern: __send__(:open, ...)
+      - pattern: public_send(:open, ...)
+      - pattern: URI.send(:open, ...)
+      - pattern: URI.__send__(:open, ...)
+      - pattern: URI.public_send(:open, ...)
+      - pattern: method(:open).call(...)
+
+  - id: ruby-taint-100-ssrf-net-http
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Net::HTTP.$METHOD(...)
+      - pattern: ::Net::HTTP.$METHOD(...)
+      - pattern: self.Net::HTTP.$METHOD(...)
+      - pattern: Net::HTTP.send(:$METHOD, ...)
+      - pattern: Net::HTTP.__send__(:$METHOD, ...)
+      - pattern: Net::HTTP.public_send(:$METHOD, ...)
+
+  - id: ruby-taint-100-ssrf-rest-client
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: RestClient.$METHOD(...)
+      - pattern: ::RestClient.$METHOD(...)
+      - pattern: self.RestClient.$METHOD(...)
+      - pattern: RestClient.send(:$METHOD, ...)
+      - pattern: RestClient.__send__(:$METHOD, ...)
+      - pattern: RestClient.public_send(:$METHOD, ...)
+
+  - id: ruby-taint-100-ssrf-open-uri
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: OpenURI.open_uri(...)
+      - pattern: ::OpenURI.open_uri(...)
+      - pattern: self.OpenURI.open_uri(...)
+      - pattern: send(:open_uri, ...)
+      - pattern: __send__(:open_uri, ...)
+      - pattern: public_send(:open_uri, ...)
+      - pattern: OpenURI.send(:open_uri, ...)
+      - pattern: OpenURI.__send__(:open_uri, ...)
+      - pattern: OpenURI.public_send(:open_uri, ...)
+      - pattern: method(:open_uri).call(...)
+
+  - id: ruby-taint-100-ssrf-faraday
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Faraday.$METHOD(...)
+      - pattern: ::Faraday.$METHOD(...)
+      - pattern: self.Faraday.$METHOD(...)
+      - pattern: Faraday.send(:$METHOD, ...)
+      - pattern: Faraday.__send__(:$METHOD, ...)
+      - pattern: Faraday.public_send(:$METHOD, ...)
+
+  - id: ruby-taint-100-ssrf-httparty
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: HTTParty.$METHOD(...)
+      - pattern: ::HTTParty.$METHOD(...)
+      - pattern: self.HTTParty.$METHOD(...)
+      - pattern: HTTParty.send(:$METHOD, ...)
+      - pattern: HTTParty.__send__(:$METHOD, ...)
+      - pattern: HTTParty.public_send(:$METHOD, ...)
+  
+  - id: ruby-taint-100-ssrf-http
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: HTTP.$METHOD(...)
+      - pattern: ::HTTP.$METHOD(...)
+      - pattern: self.HTTP.$METHOD(...)
+      - pattern: HTTP.send(:$METHOD, ...)
+      - pattern: HTTP.__send__(:$METHOD, ...)
+      - pattern: HTTP.public_send(:$METHOD, ...)
+  
+  - id: ruby-taint-100-ssrf-excon
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Excon.$METHOD(...)
+      - pattern: ::Excon.$METHOD(...)
+      - pattern: self.Excon.$METHOD(...)
+      - pattern: Excon.send(:$METHOD, ...)
+      - pattern: Excon.__send__(:$METHOD, ...)
+      - pattern: Excon.public_send(:$METHOD, ...)
+  
+  - id: ruby-taint-100-ssrf-typhoeus
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Typhoeus.$METHOD(...)
+      - pattern: ::Typhoeus.$METHOD(...)
+      - pattern: self.Typhoeus.$METHOD(...)
+      - pattern: Typhoeus.send(:$METHOD, ...)
+      - pattern: Typhoeus::Request.$METHOD(...)
+      - pattern: Typhoeus.__send__(:$METHOD, ...)
+      - pattern: Typhoeus.public_send(:$METHOD, ...)
+  
+  - id: ruby-taint-100-ssrf-httpclient
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: HTTPClient#$METHOD(...)
+      - pattern: ::HTTPClient#$METHOD(...)
+      - pattern: self.HTTPClient#$METHOD(...)
+      - pattern: HTTPClient.send(:$METHOD, ...)
+      - pattern: HTTPClient.__send__(:$METHOD, ...)
+      - pattern: HTTPClient.public_send(:$METHOD, ...)
+
+  - id: ruby-taint-100-ssrf-url-formation
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an outbound HTTP client or is used to construct a
+      URL for a network request. This can enable Server-Side Request Forgery
+      (SSRF), allowing attackers to make the application send requests to
+      internal services, cloud metadata endpoints, or other unintended hosts.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      # URL FORMATION
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              "http://#{$SINK}..."
+          - pattern: |
+              "https://#{$SINK}..."
+          - pattern: |
+              "ftp://#{$SINK}..."
+          - pattern: |
+              "ssh://#{$SINK}..."
+        - focus-metavariable: $SINK

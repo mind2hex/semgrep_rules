@@ -1,0 +1,228 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-78: Improper Neutralization of Special Elements used in an OS
+      Command ('OS Command Injection')"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: HIGH
+  owasp:
+    - A3:2021 Injection
+
+pattern-sources: &common_pattern_sources
+  - pattern: params
+  - pattern: cookies
+  - pattern: session
+  - pattern: request.headers
+  - pattern: request.body
+  - patterns:
+      - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*spec.rb"
+
+rules:
+  - id: ruby-taint-404-command-injection-backticks
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+      modifying sensitive information stored in the machine.
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+
+    pattern-sinks:
+      - pattern: |
+          `...`
+      - pattern: |
+          %x(...)
+
+  - id: ruby-taint-404-command-injection-system-call
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+      modifying sensitive information stored in the machine.
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: system(...)
+      - pattern: Kernel.system(...)
+      - pattern: ::Kernel.system(...)
+      - pattern: self.system(...)
+      - pattern: Kernel.system(...)
+      - pattern: send(:system, ...)
+      - pattern: __send__(:system, ...)
+      - pattern: public_send(:system, ...)
+      - pattern: Kernel.send(:system, ...)
+      - pattern: Kernel.__send__(:system, ...)
+      - pattern: Kernel.public_send(:system, ...)
+      - pattern: method(:system).call(...)
+      - pattern: Kernel.method(:system).call(...)
+      - pattern: $OBJ.method(:system).call(...)
+      - pattern: $OBJ.system(...)
+
+  - id: ruby-taint-404-command-injection-exec-call
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+      modifying sensitive information stored in the machine.
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: exec(...)
+      - pattern: Kernel.exec(...)
+      - pattern: Process.exec(...)
+      - pattern: ::Kernel.exec(...)
+      - pattern: self.exec(...)
+      - pattern: Kernel.exec(...)
+      - pattern: self.exec(...)
+      - pattern: send(:exec, ...)
+      - pattern: __send__(:exec, ...)
+      - pattern: public_send(:exec, ...)
+      - pattern: Kernel.send(:exec, ...)
+      - pattern: Kernel.__send__(:exec, ...)
+      - pattern: Kernel.public_send(:exec, ...)
+      - pattern: method(:exec).call(...)
+      - pattern: Kernel.method(:exec).call(...)
+      - pattern: $OBJ.method(:exec).call(...)
+      - pattern: $OBJ.exec(...)
+      - pattern: exec(*...)
+      - pattern: Kernel.exec(*...)
+      - pattern: exec(..., ...)
+      - pattern: Kernel.exec(..., ...)
+
+  - id: ruby-taint-404-command-injection-spawn-call
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+      modifying sensitive information stored in the machine.
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: spawn(...)
+      - pattern: Kernel.spawn(...)
+      - pattern: Process.spawn(...)
+      - pattern: ::Kernel.spawn(...)
+      - pattern: self.spawn(...)
+      - pattern: send(:spawn, ...)
+      - pattern: __send__(:spawn, ...)
+      - pattern: public_send(:spawn, ...)
+      - pattern: Kernel.send(:spawn, ...)
+      - pattern: Kernel.__send__(:spawn, ...)
+      - pattern: Kernel.public_send(:spawn, ...)
+      - pattern: method(:spawn).call(...)
+      - pattern: Kernel.method(:spawn).call(...)
+      - pattern: $OBJ.method(:spawn).call(...)
+      - pattern: $OBJ.spawn(...)
+      - pattern: spawn(*...)
+      - pattern: Kernel.spawn(*...)
+
+  - id: ruby-taint-404-command-injection-open-call
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+      modifying sensitive information stored in the machine.
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              open("| #{$SINK}")
+          - pattern: |
+              open("|" + $SINK)
+          - pattern: |
+              Kernel.open("| #{$SINK}")
+          - pattern: |
+              Kernel.open("|" + $SINK)
+          - pattern: |
+              IO.popen("| #{$SINK}")
+          - pattern: |
+              IO.popen("|" + $SINK)
+        - focus-metavariable: $SINK
+
+  - id: ruby-taint-404-command-injection-open3-call
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+      modifying sensitive information stored in the machine.
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Open3.capture2(...)
+      - pattern: Open3.capture2e(...)
+      - pattern: Open3.capture3(...)
+      - pattern: Open3.popen2(...)
+      - pattern: Open3.popen2e(...)
+      - pattern: Open3.popen3(...)
+      - pattern: Open3.pipeline(...)
+      - pattern: Open3.pipeline_w(...)
+      - pattern: Open3.pipeline_r(...)
+      - pattern: Open3.pipeline_rw(...)
+      - pattern: Open3.pipeline_start(...)
+
+  - id: ruby-taint-404-command-injection-pty-spawn-call
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      The application allows the execution of functions or methods which execute
+      commands in the system with non-sanitized parameters. This action would
+      allow an attacker to inject malicious commands in the server to highly
+      increase the attack vectors by escalating privileges, obtaining or
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: PTY.spawn(...)
+      - pattern: PTY.getpty(...)
+      - pattern: PTY.spawn(*...)
+      - pattern: PTY.spawn(..., ...)
+      - pattern: PTY.spawn(*...)

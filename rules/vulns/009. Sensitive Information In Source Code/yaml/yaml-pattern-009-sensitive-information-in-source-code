@@ -1,5 +1,0 @@
-Mappings:
-  TTLConfig:
-    # ok: yaml-pattern-009-sensitive-information-in-source-code
-    cert:
-      Days: 90

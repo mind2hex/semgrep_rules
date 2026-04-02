@@ -1,0 +1,59 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-89: Improper Neutralization of Special Elements used in an SQL
+      Command ('SQL Injection')"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: HIGH
+  owasp:
+    - A3:2021 Injection
+  technology:
+    - nodejs
+
+pattern-sources: &common_pattern_sources
+  - pattern: params
+  - pattern: cookies
+  - pattern: session
+  - pattern: request.headers
+  - pattern: request.body
+  - patterns:
+      - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*spec.rb"
+
+rules:
+  - id: ruby-taint-146-sql-injection-dynamic-sql-statement
+    languages:
+      - ruby
+    severity: CRITICAL
+    message: >
+      Dynamic SQL statements are generated without the required data validation
+      and without using parameterized statements or stored procedures.
+    mode: taint
+    path: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-inside: "..."
+        - pattern: $X
+        - metavariable-regex:
+            metavariable: $X
+            regex: .* (=|LIKE) '[%]{0,1}#\{.*\}[%]{0,1}'
+
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              "$SQLSTR" + ...
+          - pattern: |
+              "$SQLSTR#{...}..."
+        - metavariable-regex:
+            metavariable: $SQLSTR
+            regex: (?i)(?i)^\s*(SELECT|INSERT|UPDATE|DELETE|WHERE|FROM|JOIN|AND|OR|HAVING|GROUP|ORDER|LIMIT|OFFSET|LIKE|FILTER|CAUSE|CONDITION|@[A-Z_]*|upper[(].*[)]) .*
+

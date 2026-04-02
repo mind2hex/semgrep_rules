@@ -1,0 +1,251 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+    - audit
+  technology:
+    - ruby
+  vulnerability_class:
+    - Insecure Deserialization
+    - Unsafe Deserialization
+  cwe:
+    - "CWE-502: Deserialization of Untrusted Data"
+  owasp:
+    - "A08:2021 - Software and Data Integrity Failures"
+  confidence: HIGH
+  impact: HIGH
+  likelihood: HIGH
+  shortDescription: Untrusted data reaches an unsafe deserialization sink
+  description: >
+    This rule detects flows where user-controlled input reaches Ruby
+    deserialization APIs such as Marshal.load, YAML.load, Psych.load, or
+    JSON.load. When untrusted data is deserialized, an attacker may be able
+    to instantiate unexpected objects, trigger gadget chains, or execute
+    arbitrary code depending on the available classes and application
+    context.
+  remediation: >
+    Do not deserialize untrusted input with unsafe APIs. Prefer safe
+    alternatives such as YAML.safe_load or JSON.parse where applicable.
+    Validate input format and content strictly, and only deserialize data
+    from trusted and integrity-protected sources.
+  references:
+    - "https://cwe.mitre.org/data/definitions/502.html"
+    - "https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/"
+    - "https://docs.ruby-lang.org/en/master/Marshal.html"
+    - "https://ruby-doc.org/stdlib/libdoc/psych/rdoc/Psych.html"
+
+pattern-sources: &common_pattern_sources
+  - pattern: params
+  - pattern: cookies
+  - pattern: session
+  - pattern: request.headers
+  - pattern: request.body
+  - patterns:
+      - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*spec.rb"
+
+rules:
+  - id: ruby-taint-096-insecure-deserialization-marshal
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an unsafe deserialization sink. Deserializing
+      attacker-controlled data can lead to arbitrary object creation, denial of
+      service, or remote code execution. Prefer safe parsing methods and avoid
+      loading untrusted serialized objects.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Marshal.load(...)
+      - pattern: ::Marshal.load(...)
+      - pattern: self.Marshal.load(...)
+      - pattern: send(:load, ...)
+      - pattern: __send__(:load, ...)
+      - pattern: public_send(:load, ...)
+      - pattern: Marshal.send(:load, ...)
+      - pattern: Marshal.__send__(:load, ...)
+      - pattern: Marshal.public_send(:load, ...)
+      - pattern: method(:load).call(...)
+      - pattern: Marshal.method(:load).call(...)
+      - pattern: $OBJ.method(:load).call(...)
+      - pattern: $OBJ.load(...)
+      - pattern: Marshal.restore(...)
+      - pattern: ::Marshal.restore(...)
+      - pattern: self.Marshal.restore(...)
+      - pattern: send(:restore, ...)
+      - pattern: __send__(:restore, ...)
+      - pattern: public_send(:restore, ...)
+      - pattern: Marshal.send(:restore, ...)
+      - pattern: Marshal.__send__(:restore, ...)
+      - pattern: Marshal.public_send(:restore, ...)
+      - pattern: method(:restore).call(...)
+      - pattern: Marshal.method(:restore).call(...)
+      - pattern: $OBJ.method(:restore).call(...)
+      - pattern: $OBJ.restore(...)
+
+  - id: ruby-taint-096-insecure-deserialization-yaml
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an unsafe deserialization sink. Deserializing
+      attacker-controlled data can lead to arbitrary object creation, denial of
+      service, or remote code execution. Prefer safe parsing methods and avoid
+      loading untrusted serialized objects.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: YAML.load(...)
+      - pattern: ::YAML.load(...)
+      - pattern: self.YAML.load(...)
+      - pattern: send(:load, ...)
+      - pattern: __send__(:load, ...)
+      - pattern: public_send(:load, ...)
+      - pattern: YAML.send(:load, ...)
+      - pattern: YAML.__send__(:load, ...)
+      - pattern: YAML.public_send(:load, ...)
+      - pattern: method(:load).call(...)
+      - pattern: $OBJ.method(:load).call(...)
+      - pattern: $OBJ.load(...)
+      - pattern: YAML.unsafe_load(...)
+      - pattern: ::YAML.unsafe_load(...)
+      - pattern: self.YAML.unsafe_load(...)
+      - pattern: send(:unsafe_load, ...)
+      - pattern: __send__(:unsafe_load, ...)
+      - pattern: public_send(:unsafe_load, ...)
+      - pattern: YAML.send(:unsafe_load, ...)
+      - pattern: YAML.__send__(:unsafe_load, ...)
+      - pattern: YAML.public_send(:unsafe_load, ...)
+      - pattern: method(:unsafe_load).call(...)
+      - pattern: YAML.method(:unsafe_load).call(...)
+      - pattern: $OBJ.method(:unsafe_load).call(...)
+      - pattern: $OBJ.unsafe_load(...)
+
+  - id: ruby-taint-096-insecure-deserialization-psych
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an unsafe deserialization sink. Deserializing
+      attacker-controlled data can lead to arbitrary object creation, denial of
+      service, or remote code execution. Prefer safe parsing methods and avoid
+      loading untrusted serialized objects.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Psych.load(...)
+      - pattern: ::Psych.load(...)
+      - pattern: self.Psych.load(...)
+      - pattern: send(:load, ...)
+      - pattern: __send__(:load, ...)
+      - pattern: public_send(:load, ...)
+      - pattern: Psych.send(:load, ...)
+      - pattern: Psych.__send__(:load, ...)
+      - pattern: Psych.public_send(:load, ...)
+      - pattern: method(:load).call(...)
+      - pattern: $OBJ.method(:load).call(...)
+      - pattern: $OBJ.load(...)
+      - pattern: Psych.unsafe_load(...)
+      - pattern: ::Psych.unsafe_load(...)
+      - pattern: self.Psych.unsafe_load(...)
+      - pattern: send(:unsafe_load, ...)
+      - pattern: __send__(:unsafe_load, ...)
+      - pattern: public_send(:unsafe_load, ...)
+      - pattern: Psych.send(:unsafe_load, ...)
+      - pattern: Psych.__send__(:unsafe_load, ...)
+      - pattern: Psych.public_send(:unsafe_load, ...)
+      - pattern: method(:unsafe_load).call(...)
+      - pattern: Psych.method(:unsafe_load).call(...)
+      - pattern: $OBJ.method(:unsafe_load).call(...)
+      - pattern: $OBJ.unsafe_load(...)
+
+  - id: ruby-taint-096-insecure-deserialization-json
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an unsafe deserialization sink. Deserializing
+      attacker-controlled data can lead to arbitrary object creation, denial of
+      service, or remote code execution. Prefer safe parsing methods and avoid
+      loading untrusted serialized objects.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: JSON.load(...)
+      - pattern: ::JSON.load(...)
+      - pattern: self.JSON.load(...)
+      - pattern: send(:load, ...)
+      - pattern: __send__(:load, ...)
+      - pattern: public_send(:load, ...)
+      - pattern: JSON.send(:load, ...)
+      - pattern: JSON.__send__(:load, ...)
+      - pattern: JSON.public_send(:load, ...)
+      - pattern: method(:load).call(...)
+      - pattern: $OBJ.method(:load).call(...)
+      - pattern: $OBJ.load(...)
+      - pattern: JSON.unsafe_load(...)
+      - pattern: ::JSON.unsafe_load(...)
+      - pattern: self.JSON.unsafe_load(...)
+      - pattern: send(:unsafe_load, ...)
+      - pattern: __send__(:unsafe_load, ...)
+      - pattern: public_send(:unsafe_load, ...)
+      - pattern: JSON.send(:unsafe_load, ...)
+      - pattern: JSON.__send__(:unsafe_load, ...)
+      - pattern: JSON.public_send(:unsafe_load, ...)
+      - pattern: method(:unsafe_load).call(...)
+      - pattern: JSON.method(:unsafe_load).call(...)
+      - pattern: $OBJ.method(:unsafe_load).call(...)
+      - pattern: $OBJ.unsafe_load(...)
+
+  - id: ruby-taint-096-insecure-deserialization-ojson
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches an unsafe deserialization sink. Deserializing
+      attacker-controlled data can lead to arbitrary object creation, denial of
+      service, or remote code execution. Prefer safe parsing methods and avoid
+      loading untrusted serialized objects.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Oj.load(...)
+      - pattern: ::Oj.load(...)
+      - pattern: self.Oj.load(...)
+      - pattern: send(:load, ...)
+      - pattern: __send__(:load, ...)
+      - pattern: public_send(:load, ...)
+      - pattern: Oj.send(:load, ...)
+      - pattern: Oj.__send__(:load, ...)
+      - pattern: Oj.public_send(:load, ...)
+      - pattern: method(:load).call(...)
+      - pattern: $OBJ.method(:load).call(...)
+      - pattern: $OBJ.load(...)
+      - pattern: Oj.unsafe_load(...)
+      - pattern: ::Oj.unsafe_load(...)
+      - pattern: self.Oj.unsafe_load(...)
+      - pattern: send(:unsafe_load, ...)
+      - pattern: __send__(:unsafe_load, ...)
+      - pattern: public_send(:unsafe_load, ...)
+      - pattern: Oj.send(:unsafe_load, ...)
+      - pattern: Oj.__send__(:unsafe_load, ...)
+      - pattern: Oj.public_send(:unsafe_load, ...)
+      - pattern: method(:unsafe_load).call(...)
+      - pattern: Oj.method(:unsafe_load).call(...)
+      - pattern: $OBJ.method(:unsafe_load).call(...)
+      - pattern: $OBJ.unsafe_load(...)

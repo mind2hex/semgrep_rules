@@ -1,0 +1,325 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - audit
+  cwe:
+    - "CWE-798: Use of Hard-coded Credentials"
+    - "CWE-259: Use of Hard-coded Password"
+    - "CWE-321: Use of Hard-coded Cryptographic Key"
+    - "CWE-540: Inclusion of Sensitive Information in Source Code"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: MEDIUM
+  references:
+    - https://owasp.org/www-community/vulnerabilities/Use_of_hard-coded_password
+    - https://cwe.mitre.org/data/definitions/798.html
+    - https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+
+rules:
+  - id: yaml-pattern-009-gcp-credentials
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded Google Cloud credentials found in YAML configuration.
+      These values expose client emails, client IDs, and private keys directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              client_email: "$SECRET"
+          - pattern: |
+              client_secret: "$SECRET"
+          - pattern: |
+              client_id: "$SECRET"
+          - pattern: |
+              private_key: "$SECRET"
+          - pattern: |
+              private_key_id: "$SECRET"
+          - pattern: |
+              project_id: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-aws-credentials
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded AWS credentials found in YAML configuration.
+      These values expose access keys or session tokens directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              aws_access_key_id: "$SECRET"
+          - pattern: |
+              aws_secret_access_key: "$SECRET"
+          - pattern: |
+              aws_session_token: "$SECRET"
+          - pattern: |
+              accessKeyId: "$SECRET"
+          - pattern: |
+              secretAccessKey: "$SECRET"
+          - pattern: |
+              sessionToken: "$SECRET"
+          - pattern: |
+              accessKey: "$SECRET"
+          - pattern: |
+              secretKey: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-azure-credentials
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded Azure credentials found in YAML configuration.
+      These values expose Azure client IDs, secrets, tenant IDs or subscription IDs directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              azure_client_id: "$SECRET"
+          - pattern: |
+              azure_client_secret: "$SECRET"
+          - pattern: |
+              azure_tenant_id: "$SECRET"
+          - pattern: |
+              azure_subscription_id: "$SECRET"
+          - pattern: |
+              AZURE_CLIENT_SECRET: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-digitalocean-credentials
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded DigitalOcean API token found in YAML configuration.
+      These values expose DigitalOcean access tokens directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              digitalocean_token: "$SECRET"
+          - pattern: |
+              do_api_token: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-heroku-api-key
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded Heroku API key found in YAML configuration.
+      These values expose Heroku API keys directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              heroku_api_key: "$SECRET"
+          - pattern: |
+              HEROKU_API_KEY: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-generic-passwords
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded generic password found in YAML configuration.
+      These values expose user or administrator passwords directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              password: "$SECRET"
+          - pattern: |
+              passwd: "$SECRET"
+          - pattern: |
+              pwd: "$SECRET"
+          - pattern: |
+              user_password: "$SECRET"
+          - pattern: |
+              userPassword: "$SECRET"
+          - pattern: |
+              admin_password: "$SECRET"
+          - pattern: |
+              adminPassword: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-generic-api-keys
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded generic API key found in YAML configuration.
+      These values expose API keys or tokens used to access services directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              api_key: "$SECRET"
+          - pattern: |
+              apiKey: "$SECRET"
+          - pattern: |
+              apikey: "$SECRET"
+          - pattern: |
+              api-key: "$SECRET"
+          - pattern: |
+              API_KEY: "$SECRET"
+          - pattern: |
+              x-api-key: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-access-keys
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded access key found in YAML configuration.
+      These values expose generic access keys that may grant access to external services.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              access_key: "$SECRET"
+          - pattern: |
+              accessKey: "$SECRET"
+          - pattern: |
+              access-key: "$SECRET"
+          - pattern: |
+              ACCESS_KEY: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-secret-keys
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded secret key found in YAML configuration.
+      These values expose generic application or service secrets directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              secret_key: "$SECRET"
+          - pattern: |
+              secretKey: "$SECRET"
+          - pattern: |
+              secret-key: "$SECRET"
+          - pattern: |
+              SECRET_KEY: "$SECRET"
+          - pattern: |
+              app_secret: "$SECRET"
+          - pattern: |
+              appSecret: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-generic-tokens
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded authentication or access token found in YAML configuration.
+      These values expose bearer, auth, refresh, or JWT tokens directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              token: "$SECRET"
+          - pattern: |
+              access_token: "$SECRET"
+          - pattern: |
+              accessToken: "$SECRET"
+          - pattern: |
+              auth_token: "$SECRET"
+          - pattern: |
+              authToken: "$SECRET"
+          - pattern: |
+              bearer_token: "$SECRET"
+          - pattern: |
+              bearerToken: "$SECRET"
+          - pattern: |
+              refresh_token: "$SECRET"
+          - pattern: |
+              refreshToken: "$SECRET"
+          - pattern: |
+              jwt_token: "$SECRET"
+          - pattern: |
+              jwtToken: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-database-passwords
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded database password found in YAML configuration.
+      These values expose database credentials directly in source control.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              db_password: "$SECRET"
+          - pattern: |
+              dbPassword: "$SECRET"
+          - pattern: |
+              database_password: "$SECRET"
+          - pattern: |
+              databasePassword: "$SECRET"
+          - pattern: |
+              DB_PASSWORD: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata
+
+  - id: yaml-pattern-009-database-urls
+    languages:
+      - yaml
+    severity: INFO
+    message: |-
+      Hardcoded database URL or connection string found in YAML configuration.
+      These values frequently embed credentials or sensitive connection details.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              database_url: "$SECRET"
+          - pattern: |
+              databaseUrl: "$SECRET"
+          - pattern: |
+              DATABASE_URL: "$SECRET"
+          - pattern: |
+              connection_string: "$SECRET"
+          - pattern: |
+              connectionString: "$SECRET"
+          - pattern: |
+              CONNECTION_STRING: "$SECRET"
+          - pattern: |
+              jdbc_url: "$SECRET"
+          - pattern: |
+              JDBC_URL: "$SECRET"
+      - pattern-not-regex: |
+          [a-zA-Z0-9_-]+:\s*["']?(\$\{[^}]+\}|\$[A-Z0-9_]+|\{\{.*\}\})["']?
+
+    metadata: *common_metadata

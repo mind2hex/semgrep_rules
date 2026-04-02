@@ -1,0 +1,341 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+    - audit
+  technology:
+    - ruby
+  vulnerability_class:
+    - Local File Inclusion
+    - Remote File Inclusion
+    - Path Traversal
+  cwe:
+    - "CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+    - "CWE-23: Relative Path Traversal"
+    - "CWE-98: Improper Control of Filename for Include/Require Statement in PHP Program ('Remote File Inclusion')"
+    - "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+  owasp:
+    - "A01:2021 - Broken Access Control"
+    - "A05:2021 - Security Misconfiguration"
+  confidence: HIGH
+  impact: HIGH
+  likelihood: HIGH
+  shortDescription: Untrusted input flows into local or remote file loading sinks
+  description: >
+    This rule detects flows where user-controlled input reaches APIs that
+    read local files, open paths, include code, render files, or fetch
+    remote resources. If attackers can influence the path or URL, they may
+    access arbitrary local files, traverse directories, include unintended
+    code or templates, or retrieve remote content under attacker control.
+  remediation: >
+    Do not use untrusted input directly in file paths, include/load
+    statements, or remote resource fetches. Restrict access to fixed
+    directories, canonicalize and validate paths after resolution, enforce
+    strict allowlists for expected files and hosts, and block traversal
+    sequences and untrusted schemes. Prefer fixed resource mappings over
+    dynamic path or URL construction.
+  references:
+    - "https://cwe.mitre.org/data/definitions/22.html"
+    - "https://cwe.mitre.org/data/definitions/23.html"
+    - "https://cwe.mitre.org/data/definitions/98.html"
+    - "https://cwe.mitre.org/data/definitions/829.html"
+    - "https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+    - "https://owasp.org/Top10/A05_2021-Security_Misconfiguration/"
+
+pattern-sources: &common_pattern_sources
+  - pattern: params
+  - pattern: cookies
+  - pattern: session
+  - pattern: request.headers
+  - pattern: request.body
+  - patterns:
+      - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*spec.rb"
+
+
+rules:
+  - id: ruby-taint-123-lfi-rfi-file-read
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: File.read(...)
+      - pattern: ::File.read(...)
+      - pattern: self.File.read(...)
+      - pattern: send(:read, ...)
+      - pattern: __send__(:read, ...)
+      - pattern: public_send(:read, ...)
+      - pattern: File.send(:read, ...)
+      - pattern: File.__send__(:read, ...)
+      - pattern: File.public_send(:read, ...)
+      - pattern: method(:read).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-io-read
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: IO.read(...)
+      - pattern: ::IO.read(...)
+      - pattern: self.IO.read(...)
+      - pattern: send(:read, ...)
+      - pattern: __send__(:read, ...)
+      - pattern: public_send(:read, ...)
+      - pattern: IO.send(:read, ...)
+      - pattern: IO.__send__(:read, ...)
+      - pattern: IO.public_send(:read, ...)
+      - pattern: method(:read).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-open-call
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: open(...)
+      - pattern: ::open(...)
+      - pattern: self.open(...)
+      - pattern: send(:open, ...)
+      - pattern: __send__(:open, ...)
+      - pattern: public_send(:open, ...)
+      - pattern: IO.send(:open, ...)
+      - pattern: IO.__send__(:open, ...)
+      - pattern: IO.public_send(:open, ...)
+      - pattern: method(:open).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-send-file
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: send_file ...
+      - pattern: ::send_file(...)
+      - pattern: self.send_file(...)
+      - pattern: send(:send_file, ...)
+      - pattern: __send__(:send_file, ...)
+      - pattern: public_send(:send_file, ...)
+      - pattern: send_file.send(:send_file, ...)
+      - pattern: send_file.__send__(:send_file, ...)
+      - pattern: send_file.public_send(:send_file, ...)
+      - pattern: method(:send_file).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-pathname-read
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Pathname.new(...).read
+      - pattern: ::Pathname.new(...).read
+      - pattern: self.Pathname.new(...).read
+      - pattern: send(:read, ...)
+      - pattern: __send__(:read, ...)
+      - pattern: public_send(:read, ...)
+      - pattern: Pathname.new(...).send(:read, ...)
+      - pattern: Pathname.new(...).__send__(:read, ...)
+      - pattern: Pathname.new(...).public_send(:read, ...)
+      - pattern: method(:read).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-yaml-load-file
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: YAML.load_file(...)
+      - pattern: ::YAML.load_file(...)
+      - pattern: self.YAML.load_file(...)
+      - pattern: send(:load_file, ...)
+      - pattern: __send__(:load_file, ...)
+      - pattern: public_send(:load_file, ...)
+      - pattern: YAML.new(...).send(:load_file, ...)
+      - pattern: YAML.new(...).__send__(:load_file, ...)
+      - pattern: YAML.new(...).public_send(:load_file, ...)
+      - pattern: method(:load_file).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-require-relative
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: require_relative ...
+      - pattern: ::require_relative(...)
+      - pattern: self.require_relative(...)
+      - pattern: send(:require_relative, ...)
+      - pattern: __send__(:require_relative, ...)
+      - pattern: public_send(:require_relative, ...)
+      - pattern: require_relative.send(:require_relative, ...)
+      - pattern: require_relative.__send__(:require_relative, ...)
+      - pattern: require_relative.public_send(:require_relative, ...)
+      - pattern: method(:require_relative).call(...)
+  
+  - id: ruby-taint-123-lfi-rfi-uri-open
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: URI.open(...)
+      - pattern: ::URI.open(...)
+      - pattern: self.URI.open(...)
+      - pattern: send(:open, ...)
+      - pattern: __send__(:open, ...)
+      - pattern: public_send(:open, ...)
+      - pattern: URI.send(:open, ...)
+      - pattern: URI.__send__(:open, ...)
+      - pattern: URI.public_send(:open, ...)
+      - pattern: method(:open).call(...)
+  
+  - id: ruby-taint-123-lfi-rfi-open-uri
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: OpenURI.open_uri(...)
+      - pattern: ::OpenURI.open_uri(...)
+      - pattern: self.OpenURI.open_uri(...)
+      - pattern: send(:open_uri, ...)
+      - pattern: __send__(:open_uri, ...)
+      - pattern: public_send(:open_uri, ...)
+      - pattern: OpenURI.send(:open_uri, ...)
+      - pattern: OpenURI.__send__(:open_uri, ...)
+      - pattern: OpenURI.public_send(:open_uri, ...)
+      - pattern: method(:open_uri).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-net-http-get
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - pattern: Net::HTTP.get(...)
+      - pattern: ::Net::HTTP.get(...)
+      - pattern: self.Net::HTTP.get(...)
+      - pattern: send(:get, ...)
+      - pattern: __send__(:get, ...)
+      - pattern: public_send(:get, ...)
+      - pattern: Net::HTTP.send(:get, ...)
+      - pattern: Net::HTTP.__send__(:get, ...)
+      - pattern: Net::HTTP.public_send(:get, ...)
+      - pattern: method(:get).call(...)
+
+  - id: ruby-taint-123-lfi-rfi-file-open
+    languages:
+      - ruby
+    severity: HIGH
+    message: >
+      Untrusted input reaches a file access or remote resource loading sink.
+      This can enable Local File Inclusion (LFI), Remote File Inclusion (RFI),
+      arbitrary file read, path traversal, or unsafe remote resource loading.
+      An attacker may read sensitive local files, load unintended application
+      resources, or cause the application to fetch attacker-controlled content.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern-either:
+          - pattern: File.open($SINK, ...)
+          - pattern: load $SINK
+          - pattern: require $SINK
+        - focus-metavariable: $SINK

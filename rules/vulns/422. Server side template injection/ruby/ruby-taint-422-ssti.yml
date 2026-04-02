@@ -1,0 +1,71 @@
+rules:
+  - id: ruby-taint-422-ssti
+    languages:
+      - ruby
+    severity: HIGH
+    paths:
+      exclude:
+        - "*spec.rb"
+    message: >
+      Untrusted input reaches a server-side template rendering sink. This can
+      enable Server-Side Template Injection (SSTI), allowing attackers to
+      inject template expressions, access sensitive data, or potentially
+      achieve arbitrary code execution depending on the template engine and
+      application context.
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+        - audit
+      technology:
+        - ruby
+      vulnerability_class:
+        - Server-Side Template Injection
+        - SSTI
+      cwe:
+        - "CWE-1336: Improper Neutralization of Special Elements Used in a Template Engine"
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      owasp:
+        - "A03:2021 - Injection"
+      confidence: HIGH
+      impact: HIGH
+      likelihood: HIGH
+      shortDescription: Untrusted input flows into a template rendering sink
+      description: >
+        This rule detects flows where user-controlled data reaches template
+        engines or inline rendering APIs. When untrusted input is interpreted
+        as a template rather than treated as plain data, an attacker may inject
+        template syntax to read application data, alter rendering behavior, or
+        execute code through dangerous template features or exposed objects.
+      remediation: >
+        Do not render user-controlled input as a template. Use fixed templates
+        stored in trusted locations and pass untrusted data only as variables
+        into the rendering context. Avoid inline template rendering with
+        untrusted content, and restrict or sandbox template engine features
+        wherever possible.
+      references:
+        - "https://cwe.mitre.org/data/definitions/1336.html"
+        - "https://cwe.mitre.org/data/definitions/94.html"
+        - "https://owasp.org/Top10/A03_2021-Injection/"
+    mode: taint
+    pattern-sources:
+      - pattern: params
+      - pattern: cookies
+      - pattern: session
+      - pattern: request.headers
+      - pattern: request.body
+      - patterns:
+          - pattern: def $FUNCTION(..., $SOURCE, ...) ... end
+          - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - pattern: ERB.new(...)
+      - pattern: "render inline: ..."
+      - pattern: "render html: ..."
+      - pattern: Haml::Engine.new(...)
+      - pattern: Liquid::Template.parse(...)
+      - patterns:
+        - pattern: "Slim::Template.new {$SINK}"
+        - focus-metavariable: $SINK
+      - patterns:
+        - pattern: "Tilt.new {$SINK}"
+        - focus-metavariable: $SINK

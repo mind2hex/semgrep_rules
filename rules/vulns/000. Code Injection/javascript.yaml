@@ -1,0 +1,342 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+  confidence: MEDIUM
+  likelihood: LOW
+  impact: HIGH
+  owasp:
+    - A3:2021 Injection
+
+pattern-sources: &common_pattern_sources
+  - pattern: req.body
+  - pattern: req.query
+  - pattern: req.params
+  - pattern: request.body
+  - pattern: request.query
+  - pattern: request.params
+  - patterns: 
+    - pattern: function $FUNC(..., $SINK, ...)
+    - focus-metavariable: $SINK
+  - patterns:
+      - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+      - focus-metavariable: $PARAM
+  - patterns:
+      - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+      - focus-metavariable: $SOURCE
+  - patterns:
+      - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+      - focus-metavariable: $SOURCE
+
+pattern-sanitizers: &common_pattern_sanitizers
+  - pattern: parseInt(...)
+  - pattern: JSON.stringify(...)
+  - pattern: Number(...)
+  - pattern: encodeURIComponent(...)
+  - pattern: Boolean(...)
+  - pattern: parseFloat(...)
+  - pattern: validator.isInt(...)
+  - pattern: DOMPurify.sanitize(...)
+
+paths: &common_paths
+  exclude:
+    - "*test.js"
+    - "*test.ts"
+    - "*test.jsx"
+    - "*test.tsx"
+    - "*test.spec.js"
+    - "*test.spec.ts"
+    - "*test.spec.jsx"
+    - "*test.spec.tsx"
+    - "*test.unit.js"
+    - "*test.unit.ts"
+    - "*test.unit.jsx"
+    - "*test.unit.tsx"
+    - "*test.integration.js"
+    - "*test.integration.ts"
+    - "*test.integration.jsx"
+    - "*test.integration.tsx"
+    - "*test.e2e.js"
+    - "*test.e2e.ts"
+    - "*test.e2e.jsx"
+    - "*test.e2e.tsx"
+
+rules:
+  - id: javascript-tainted-000-code-injection-eval
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+
+    pattern-sinks:
+      - pattern: eval(...)
+      - pattern: eval.call(null, ...)
+      - pattern: eval.apply(null, ...)
+
+      - pattern: global.eval(...)
+      - pattern: global["eval"](...)
+      - pattern: global.eval.call(null, ...)
+      - pattern: global.eval.apply(null, ...)
+
+      - pattern: window.eval(...)
+      - pattern: window["eval"](...)
+
+      - pattern: globalThis.eval(...)
+      - pattern: globalThis.eval(...).toString()
+      - pattern: globalThis["eval"](...)
+
+      - pattern: this["eval"](...)
+      - pattern: this.eval(...)
+
+      - pattern: (0, eval)(...)
+
+      - pattern: self.eval(...)
+      - pattern: parent.eval(...)
+      - pattern: top.eval(...)
+      - pattern: contentWindow.eval(...)
+      - pattern: contentDocument.eval(...)
+      - pattern: document.eval(...)
+
+  - id: javascript-tainted-000-code-injection-function-constructor
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # Function constructor
+      - patterns:
+        - pattern-either:
+          - pattern: new Function("$SINK")()
+          - pattern: Function("$SINK")()
+          - pattern: Function.call(null, "$SINK")()
+          - pattern: Function.apply(null, ["$SINK"])()
+          - pattern: new Object.getPrototypeOf(function(){}).constructor(..., $SINK)
+          - pattern: Object.getPrototypeOf(function(){}).constructor(..., $SINK)
+          - pattern: new (async function(){}).constructor.constructor(..., $SINK)
+          - pattern: (async function(){}).constructor.constructor(..., $SINK)
+        - focus-metavariable: $SINK
+      
+  - id: javascript-tainted-000-code-injection-vm-module
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # vm module (Node.js)
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              $VM.runInThisContext(...)
+          - pattern: |
+              $VM.runInNewContext(...)
+          - pattern: |
+              $VM.runInContext(...)
+          - pattern: |
+              $VM.Script(...)
+          - pattern: |
+              new $VM.Script(...)
+
+  - id: javascript-tainted-000-code-injection-dynamic-import
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # dynamic import
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              require(...)
+          - pattern: |
+              import(...)
+
+  - id: javascript-tainted-000-code-injection-web-assembly
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # web assembly
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              WebAssembly.instantiate(...)
+          - pattern: |
+              WebAssembly.compile(...)
+
+  - id: javascript-tainted-000-code-injection-worker-threads
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # Worker threads con eval-like behavior
+      - patterns:
+        - pattern-either:
+            - pattern: |
+                new Worker(..., { eval: true })
+
+  - id: javascript-tainted-000-code-injection-timer-functions
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # Timer functions con strings (code injection)
+      - patterns:
+        - pattern-either:
+          - pattern: setTimeout("$SINK", ...)
+          - pattern: setInterval("$SINK", ...)
+          - pattern: setImmediate("$SINK")
+        - pattern-not: |
+            setTimeout($FUNCTION(...), ...)
+        - pattern-not: |
+            setInterval($FUNCTION(...), ...)
+        - focus-metavariable: $SINK
+
+  - id: javascript-tainted-000-code-injection-generator-function
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # GeneratorFunction
+      - patterns:
+        - pattern-either:
+          - pattern: |
+              $FOO = (function*(){}).constructor;
+              ...
+              $FOO(..., $SINK)
+
+          - pattern: |
+              $FOO = (function*(){}).constructor;
+              ...
+              new $FOO(..., $SINK);
+              
+          - pattern: |
+              $FOO = Object.getPrototypeOf(function*(){}).constructor;
+              ...
+              $FOO(..., $SINK)
+          
+          - pattern: |
+              $FOO = Object.getPrototypeOf(function*(){}).constructor;
+              ...
+              new $FOO(..., $SINK)
+        - focus-metavariable: $SINK
+
+  - id: javascript-tainted-000-code-injection-async-generator-function
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # AsyncGeneratorFunction
+      - patterns:
+        - pattern-either:
+          - pattern: (async function*(){}).constructor(...)
+          - pattern: new (async function*(){}).constructor(...)
+
+  - id: javascript-tainted-000-code-injection-repl
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      - patterns:        
+        - pattern: |
+            $REPL = require('repl');
+            ...
+            $REPLSRV = $REPL.start();
+            ...
+            $REPLSRV.eval($SINK, ...)
+        - focus-metavariable: $SINK
+
+  - id: javascript-tainted-000-code-injection-constructor-chains
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input is being used to build or execute program code. This can let an attacker inject arbitrary code or alter application logic. Validate and sanitize inputs and avoid dynamic code evaluation.
+    mode: taint
+    paths: *common_paths
+    metadata: *common_metadata
+    pattern-sources: *common_pattern_sources
+    pattern-sanitizers: *common_pattern_sanitizers
+    pattern-sinks:
+      # Constructor chains
+      - pattern: $OBJ.constructor.constructor(...)
+      - pattern: (()=>{}).constructor.constructor(...)
+      - pattern: ({}).constructor.constructor(...)

@@ -1,0 +1,65 @@
+rules:
+  - id: javascript-tainted-096-insecure-deserialization
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >
+      The system deserializes objects without first validating their content nor
+      casting them to a specific type.
+    mode: taint
+    pattern-sources:
+      - pattern: req.body
+      - pattern: req.query
+      - pattern: req.params
+      - pattern: request.body
+      - pattern: request.query
+      - pattern: request.params
+      - patterns: 
+        - pattern: function $FUNC(..., $SINK, ...)
+        - focus-metavariable: $SINK
+      - patterns:
+          - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+          - focus-metavariable: $PARAM
+      - patterns:
+          - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+          - focus-metavariable: $SOURCE
+      - patterns:
+          - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+          - focus-metavariable: $SOURCE
+      
+    
+    pattern-sanitizers:
+      - pattern: parseInt(...)
+      - pattern: JSON.stringify(...)
+      - pattern: Number(...)
+      - pattern: encodeURIComponent(...)
+      - pattern: Boolean(...)
+      - pattern: parseFloat(...)
+      - pattern: validator.isInt(...)
+      - pattern: DOMPurify.sanitize(...)
+
+    pattern-sinks:
+      - patterns:
+        - pattern-inside: |
+            const $SERIALIZER = require("node-serialize")
+            ...
+        - pattern: $SERIALIZER.unserialize(...)
+
+      - patterns:
+        - pattern-inside: |
+            const $SJ = require("serialize-javascript")
+            ...
+        - pattern: $SJ.deserialize(...)
+ 
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe:
+        - "CWE-502: Deserialization of Untrusted Data"
+      confidence: MEDIUM
+      likelihood: LOW
+      impact: HIGH
+      owasp:
+        - A8:2017 Insecure Deserialization

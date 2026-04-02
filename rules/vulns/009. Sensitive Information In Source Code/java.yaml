@@ -1,0 +1,47 @@
+metadata: &common_metadata
+  references:
+    - https://pentesterlab.com/exercises/cve-2023-x48x9
+    - https://cwe.mitre.org/data/definitions/798.html
+    - https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+  category: security
+  subcategory:
+    - secure default
+  cwe:
+    - "CWE-540: Inclusion of Sensitive Information in Source Code"
+  confidence: LOW
+  likelihood: MEDIUM
+  impact: MEDIUM
+
+rules:
+  - id: java-pattern-009-hardcoded-secret
+    languages:
+      - java
+    severity: WARNING
+    message: The source code repository contains sensitive information such as
+      usernames, passwords, email addresses and IP addresses, among others.
+      Alternatively, while values may be password=123 o aws.secret_key=test,
+      they reveal the bad practice of storing sensitive information in the
+      repository with no encryption, and sooner or later they can be replaced
+      for real sensitive values.
+    pattern-either:
+      # generic secret
+      - pattern-either:
+        - pattern: |
+            secret = "...";
+        - pattern: |
+            password = "...";
+
+    metadata: *common_metadata
+
+  - id: java-pattern-009-encryption-keys
+    languages:
+      - java
+    severity: WARNING
+    message: Encryption keys should not be hardcoded in the source code.
+    pattern-either:
+      - pattern: Algorithm.$ALG("..." + ...)
+      - pattern: Algorithm.$ALG("...")
+      - pattern: |
+          Keys.hmacShaKeyFor("...".getBytes());
+    metadata: *common_metadata
+        

@@ -1,0 +1,352 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-77: Improper Neutralization of Special Elements used in a Command
+      ('Command Injection')"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: HIGH
+  owasp:
+    - A3:2021 Injection
+  technology:
+    - expressjs
+    - nodejs
+
+pattern-sources: &common_pattern_sources
+  - pattern: req.body
+  - pattern: req.query
+  - pattern: req.params
+  - pattern: request.body
+  - pattern: request.query
+  - pattern: request.params
+  - patterns: 
+    - pattern: function $FUNC(..., $SINK, ...)
+    - focus-metavariable: $SINK
+  - patterns:
+      - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+      - focus-metavariable: $PARAM
+  - patterns:
+      - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+      - focus-metavariable: $SOURCE
+  - patterns:
+      - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*test.js"
+    - "*test.ts"
+    - "*test.jsx"
+    - "*test.tsx"
+    - "*test.spec.js"
+    - "*test.spec.ts"
+    - "*test.spec.jsx"
+
+rules:
+
+  - id: javascript-taint-404-child-process-exec
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: require("child_process").exec(...)
+      - pattern: require("child_process")["exec"](...)
+      - pattern: require("child_process").exec.call(...)
+      - pattern: require("child_process").exec.apply(...)
+      - pattern: require("child_process").exec.bind(...)(...)
+      - pattern: (0, require("child_process").exec)(...)
+      - pattern: globalThis.require("child_process").exec(...)
+      - pattern: window.require?.("child_process")?.exec?.(...)
+      - pattern: (0, cp.exec)(...)
+      - pattern: child_process.exec(...)
+      - pattern: exec(...)
+      - pattern: global.require("child_process").exec(...)
+      - pattern: module.require("child_process").exec(...)
+      - pattern: cp["exec"](...)
+      - pattern: child_process["exec"](...)
+      - pattern: Reflect.get(require("child_process"), "exec")(...)
+      - pattern: Reflect.get(cp, "exec")(...)
+      - pattern: Object.getOwnPropertyDescriptor(require("child_process"), "exec").value(...)
+      - pattern: Object.getOwnPropertyDescriptor(cp, "exec").value(...)
+
+  - id: javascript-taint-404-child-process-execSync
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: require("child_process").execSync(...)
+      - pattern: require("child_process")["execSync"](...)
+      - pattern: require("child_process").execSync.call(...)
+      - pattern: require("child_process").execSync.apply(...)
+      - pattern: require("child_process").execSync.bind(...)(...)
+      - pattern: (0, require("child_process").execSync)(...)
+      - pattern: globalThis.require("child_process").execSync(...)
+      - pattern: window.require?.("child_process")?.execSync?.(...)
+      - pattern: (0, cp.execSync)(...)
+      - pattern: child_process.execSync(...)
+      - pattern: execSync(...)
+      - pattern: global.require("child_process").execSync(...)
+      - pattern: module.require("child_process").execSync(...)
+      - pattern: cp["execSync"](...)
+      - pattern: child_process["execSync"](...)
+      - pattern: Reflect.get(require("child_process"), "execSync")(...)
+      - pattern: Reflect.get(cp, "execSync")(...)
+      - pattern: Object.getOwnPropertyDescriptor(require("child_process"), "execSync").value(...)
+      - pattern: Object.getOwnPropertyDescriptor(cp, "execSync").value(...)
+
+  - id: javascript-taint-404-child-process-spawn
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: require("child_process").spawn(...)
+      - pattern: require("child_process")["spawn"](...)
+      - pattern: require("child_process").spawn.call(...)
+      - pattern: require("child_process").spawn.apply(...)
+      - pattern: require("child_process").spawn.bind(...)(...)
+      - pattern: (0, require("child_process").spawn)(...)
+      - pattern: globalThis.require("child_process").spawn(...)
+      - pattern: window.require?.("child_process")?.spawn?.(...)
+      - pattern: (0, cp.spawn)(...)
+      - pattern: child_process.spawn(...)
+      - pattern: spawn(...)
+      - pattern: global.require("child_process").spawn(...)
+      - pattern: module.require("child_process").spawn(...)
+      - pattern: cp["spawn"](...)
+      - pattern: child_process["spawn"](...)
+      - pattern: Reflect.get(require("child_process"), "spawn")(...)
+      - pattern: Reflect.get(cp, "spawn")(...)
+      - pattern: Object.getOwnPropertyDescriptor(require("child_process"), "spawn").value(...)
+      - pattern: Object.getOwnPropertyDescriptor(cp, "spawn").value(...)
+
+  - id: javascript-taint-404-child-process-spawnSync
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: require("child_process").spawnSync(...)
+      - pattern: require("child_process")["spawnSync"](...)
+      - pattern: require("child_process").spawnSync.call(...)
+      - pattern: require("child_process").spawnSync.apply(...)
+      - pattern: require("child_process").spawnSync.bind(...)(...)
+      - pattern: (0, require("child_process").spawnSync)(...)
+      - pattern: globalThis.require("child_process").spawnSync(...)
+      - pattern: window.require?.("child_process")?.spawnSync?.(...)
+      - pattern: (0, cp.spawnSync)(...)
+      - pattern: child_process.spawnSync(...)
+      - pattern: spawnSync(...)
+      - pattern: global.require("child_process").spawnSync(...)
+      - pattern: module.require("child_process").spawnSync(...)
+      - pattern: cp["spawnSync"](...)
+      - pattern: child_process["spawnSync"](...)
+      - pattern: Reflect.get(require("child_process"), "spawnSync")(...)
+      - pattern: Reflect.get(cp, "spawnSync")(...)
+      - pattern: Object.getOwnPropertyDescriptor(require("child_process"), "spawnSync").value(...)
+      - pattern: Object.getOwnPropertyDescriptor(cp, "spawnSync").value(...)
+
+  - id: javascript-taint-404-child-process-execFile
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: require("child_process").execFile(...)
+      - pattern: require("child_process")["execFile"](...)
+      - pattern: require("child_process").execFile.call(...)
+      - pattern: require("child_process").execFile.apply(...)
+      - pattern: require("child_process").execFile.bind(...)(...)
+      - pattern: (0, require("child_process").execFile)(...)
+      - pattern: globalThis.require("child_process").execFile(...)
+      - pattern: window.require?.("child_process")?.execFile?.(...)
+      - pattern: (0, cp.execFile)(...)
+      - pattern: child_process.execFile(...)
+      - pattern: execFile(...)
+      - pattern: global.require("child_process").execFile(...)
+      - pattern: module.require("child_process").execFile(...)
+      - pattern: cp["execFile"](...)
+      - pattern: child_process["execFile"](...)
+      - pattern: Reflect.get(require("child_process"), "execFile")(...)
+      - pattern: Reflect.get(cp, "execFile")(...)
+      - pattern: Object.getOwnPropertyDescriptor(require("child_process"), "execFile").value(...)
+      - pattern: Object.getOwnPropertyDescriptor(cp, "execFile").value(...)
+
+  - id: javascript-taint-404-child-process-execFileSync
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: require("child_process").execFileSync(...)
+      - pattern: require("child_process")["execFileSync"](...)
+      - pattern: require("child_process").execFileSync.call(...)
+      - pattern: require("child_process").execFileSync.apply(...)
+      - pattern: require("child_process").execFileSync.bind(...)(...)
+      - pattern: (0, require("child_process").execFileSync)(...)
+      - pattern: globalThis.require("child_process").execFileSync(...)
+      - pattern: window.require?.("child_process")?.execFileSync?.(...)
+      - pattern: (0, cp.execFileSync)(...)
+      - pattern: child_process.execFileSync(...)
+      - pattern: execFileSync(...)
+      - pattern: global.require("child_process").execFileSync(...)
+      - pattern: module.require("child_process").execFileSync(...)
+      - pattern: cp["execFileSync"](...)
+      - pattern: child_process["execFileSync"](...)
+      - pattern: Reflect.get(require("child_process"), "execFileSync")(...)
+      - pattern: Reflect.get(cp, "execFileSync")(...)
+      - pattern: Object.getOwnPropertyDescriptor(require("child_process"), "execFileSync").value(...)
+      - pattern: Object.getOwnPropertyDescriptor(cp, "execFileSync").value(...)
+
+  - id: javascript-taint-404-child-process-fork
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: require("child_process").fork(...)
+      - pattern: require("child_process")["fork"](...)
+      - pattern: require("child_process").fork.call(...)
+      - pattern: require("child_process").fork.apply(...)
+      - pattern: require("child_process").fork.bind(...)(...)
+      - pattern: (0, require("child_process").fork)(...)
+      - pattern: globalThis.require("child_process").fork(...)
+      - pattern: window.require?.("child_process")?.fork?.(...)
+      - pattern: (0, cp.fork)(...)
+      - pattern: child_process.fork(...)
+      - pattern: fork(...)
+      - pattern: global.require("child_process").fork(...)
+      - pattern: module.require("child_process").fork(...)
+      - pattern: cp["fork"](...)
+      - pattern: child_process["fork"](...)
+      - pattern: Reflect.get(require("child_process"), "fork")(...)
+      - pattern: Reflect.get(cp, "fork")(...)
+      - pattern: Object.getOwnPropertyDescriptor(require("child_process"), "fork").value(...)
+      - pattern: Object.getOwnPropertyDescriptor(cp, "fork").value(...)
+
+  - id: javascript-taint-404-execa
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: execa(...)
+      - pattern: require("execa").execa(...)
+      - pattern: require("execa")(...)
+      - pattern: require("execa")["execa"](...)
+      - pattern: execa.call(...)
+      - pattern: execa.apply(...)
+      - pattern: execa.bind(...)(...)
+      - pattern: (0, execa)(...)
+      - pattern: Reflect.apply(execa, ..., ...)
+      - pattern: Reflect.get(globalThis, "execa")?.(...)
+
+  - id: javascript-taint-404-cmd-run
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: cmd.run(...)
+      - pattern: this.cmd.run(...)
+      - pattern: $OBJ.cmd.run(...)
+      - pattern: cmd["run"](...)
+      - pattern: $OBJ.cmd["run"](...)
+      - pattern: cmd.run.call(cmd, ...)
+      - pattern: cmd.run.apply(cmd, ...)
+      - pattern: cmd.run.bind(cmd)(...)
+      - pattern: Reflect.get(cmd, "run")(...)
+      - pattern: Reflect.get($OBJ.cmd, "run")(...)
+      - pattern: Object.getOwnPropertyDescriptor(cmd, "run").value(...)
+      - pattern: Object.getOwnPropertyDescriptor($OBJ.cmd, "run").value(...)
+      - pattern: cmd.run(...)
+
+  - id: javascript-taint-404-util.promisify
+    languages:
+      - javascript
+      - typescript
+    severity: CRITICAL
+    message: |
+      The application allows the execution of functions or methods which execute commands in the system with non-sanitized parameters. This action would allow an attacker to inject malicious commands in the server to highly increase the attack vectors by escalating privileges, obtaining or modifying sensitive information stored in the machine.
+    mode: taint
+    metadata: *common_metadata
+    path: *common_paths
+    pattern-sources: *common_pattern_sources
+    
+    pattern-sinks:
+      - pattern: util.promisify(...)
+      - pattern: require("util").promisify(...)
+      - pattern: require("util")["promisify"](...)
+      - pattern: util.promisify.call(util, ...)
+      - pattern: util.promisify.apply(util, ...)
+      - pattern: util.promisify.bind(util)(...)
+      - pattern: (0, util.promisify)(...)
+      - pattern: Reflect.get(util, "promisify")(...)
+      - pattern: Reflect.get(require("util"), "promisify")(...)
