@@ -36,7 +36,7 @@ rules:
       Dynamic SQL statements are generated without the required data validation
       and without using parameterized statements or stored procedures.
     mode: taint
-    path: *common_paths
+    paths: *common_paths
     metadata: *common_metadata
     pattern-sources: *common_pattern_sources
     pattern-sinks:

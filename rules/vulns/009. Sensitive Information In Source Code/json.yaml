@@ -15,6 +15,34 @@ metadata: &common_metadata
     - https://cwe.mitre.org/data/definitions/798.html
     - https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
 
+paths: &common_paths
+  exclude:
+    - "**/*.test.json"
+    - "**/*.spec.json"
+    - "**/*.unit.json"
+    - "**/*.integration.json"
+    - "**/*.e2e.json"
+    - "**/*.mock.json"
+    - "**/*.fixture.json"
+    - "**/es.json"
+    - "**/en.json"
+    - "**/fr.json"
+    - "**/de.json"
+    - "**/it.json"
+    - "**/ja.json"
+    - "**/ko.json"
+    - "**/zh.json"
+    - "**/zh-tw.json"
+    - "**/zh-cn.json"
+    - "**/zh-hk.json"
+    - "**/zh-sg.json"
+    - "**/zh-tw.json"
+    - "**/zh-cn.json"
+    - "**/zh-hk.json"
+    - "**/zh-sg.json"
+    - "**/zh-tw.json"
+    - "**/zh-cn.json"
+
 rules:
   - id: json-pattern-009-google-cloud-platform-credentials
     languages:
@@ -23,6 +51,8 @@ rules:
     message: |
       Potential hardcoded google cloud platform credentials secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "client_email": "$SECRET"
@@ -37,8 +67,6 @@ rules:
       - pattern: |
           "project_id": "$SECRET"
         
-    metadata: *common_metadata
-
   - id: json-pattern-009-aws-credentials
     languages:
       - json
@@ -46,6 +74,8 @@ rules:
     message: |
       Potential hardcoded AWS CREDENTIALS secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "aws_access_key_id": "$SECRET"
@@ -59,8 +89,6 @@ rules:
           "secretAccessKey": "$SECRET"
       - pattern: |
           "sessionToken": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-azure-credentials
     languages:
@@ -69,6 +97,8 @@ rules:
     message: |
       Potential hardcoded AZURE CREDENTIALS secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "azure_client_id": "$SECRET"
@@ -81,8 +111,6 @@ rules:
       - pattern: |
           "AZURE_CLIENT_SECRET": "$SECRET"
     
-    metadata: *common_metadata
-
   - id: json-pattern-009-digitalocean
     languages:
       - json
@@ -90,14 +118,14 @@ rules:
     message: |
       Potential hardcoded DigitalOcean secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "digitalocean_token": "$SECRET"
       - pattern: |
           "do_api_token": "$SECRET"
     
-    metadata: *common_metadata
-
   - id: json-pattern-009-heroku
     languages:
       - json
@@ -105,13 +133,13 @@ rules:
     message: |
       Potential hardcoded Heroku secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "heroku_api_key": "$SECRET"
       - pattern: |
           "HEROKU_API_KEY": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-generic-passwords
     languages:
@@ -120,6 +148,8 @@ rules:
     message: |
       Potential hardcoded Generic passwords secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "password": "$SECRET"
@@ -135,9 +165,7 @@ rules:
           "admin_password": "$SECRET"
       - pattern: |
           "adminPassword": "$SECRET"
-    
-    metadata: *common_metadata
-
+      
   - id: json-pattern-009-api-keys
     languages:
       - json
@@ -145,6 +173,8 @@ rules:
     message: |
       Potential hardcoded API Keys secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "api_key": "$SECRET"
@@ -158,8 +188,6 @@ rules:
           "API_KEY": "$SECRET"
       - pattern: |
           "x-api-key": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-access-keys
     languages:
@@ -168,6 +196,8 @@ rules:
     message: |
       Potential hardcoded Access Keys secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "access_key": "$SECRET"
@@ -177,8 +207,6 @@ rules:
           "access-key": "$SECRET"
       - pattern: |
           "ACCESS_KEY": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-secret-keys
     languages:
@@ -187,6 +215,8 @@ rules:
     message: |
       Potential hardcoded Secret Keys secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "secret": "$SECRET"
@@ -202,8 +232,6 @@ rules:
           "app_secret": "$SECRET"
       - pattern: |
           "appSecret": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-tokens
     languages:
@@ -212,6 +240,8 @@ rules:
     message: |
       Potential hardcoded Tokens secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "token": "$SECRET"
@@ -235,8 +265,6 @@ rules:
           "jwt_token": "$SECRET"
       - pattern: |
           "jwtToken": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-database-passwords
     languages:
@@ -245,6 +273,8 @@ rules:
     message: |
       Potential hardcoded Database passwords secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "db_password": "$SECRET"
@@ -256,8 +286,6 @@ rules:
           "databasePassword": "$SECRET"
       - pattern: |
           "DB_PASSWORD": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-database-urls-connection-strings
     languages:
@@ -266,6 +294,8 @@ rules:
     message: |
       Potential hardcoded Database URLs/Connection Strings secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "database_url": "$SECRET"
@@ -283,8 +313,6 @@ rules:
           "jdbc_url": "$SECRET"
       - pattern: |
           "JDBC_URL": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-mongodb
     languages:
@@ -293,6 +321,8 @@ rules:
     message: |
       Potential hardcoded MongoDB secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "mongo_uri": "$SECRET"
@@ -306,8 +336,6 @@ rules:
           "MONGO_URI": "$SECRET"
       - pattern: |
           "MONGODB_URI": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-redis
     languages:
@@ -316,6 +344,8 @@ rules:
     message: |
       Potential hardcoded Redis secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "redis_password": "$SECRET"
@@ -327,8 +357,6 @@ rules:
           "redis_url": "$SECRET"
       - pattern: |
           "REDIS_URL": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-stripe
     languages:
@@ -337,6 +365,8 @@ rules:
     message: |
       Potential hardcoded Stripe secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "stripe_secret_key": "$SECRET"
@@ -348,8 +378,6 @@ rules:
           "stripe_api_key": "$SECRET"
       - pattern: |
           "STRIPE_API_KEY": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-twilio
     languages:
@@ -358,6 +386,8 @@ rules:
     message: |
       Potential hardcoded Twilio secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "twilio_auth_token": "$SECRET"
@@ -369,8 +399,6 @@ rules:
           "twilio_api_key": "$SECRET"
       - pattern: |
           "TWILIO_API_KEY": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-sendgrid
     languages:
@@ -379,6 +407,8 @@ rules:
     message: |
       Potential hardcoded SendGrid secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "sendgrid_api_key": "$SECRET"
@@ -386,8 +416,6 @@ rules:
           "sendgridApiKey": "$SECRET"
       - pattern: |
           "SENDGRID_API_KEY": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-mailgun
     languages:
@@ -396,6 +424,8 @@ rules:
     message: |
       Potential hardcoded Mailgun secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "mailgun_api_key": "$SECRET"
@@ -403,8 +433,6 @@ rules:
           "mailgunApiKey": "$SECRET"
       - pattern: |
           "MAILGUN_API_KEY": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-slack
     languages:
@@ -413,6 +441,8 @@ rules:
     message: |
       Potential hardcoded Slack secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "slack_token": "$SECRET"
@@ -431,8 +461,6 @@ rules:
       - pattern: |
           "SLACK_BOT_TOKEN": "$SECRET"
     
-    metadata: *common_metadata
-
   - id: json-pattern-009-github
     languages:
       - json
@@ -440,6 +468,8 @@ rules:
     message: |
       Potential hardcoded GitHub secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "github_token": "$SECRET"
@@ -453,8 +483,6 @@ rules:
           "GH_TOKEN": "$SECRET"
       - pattern: |
           "github_personal_access_token": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-gitlab
     languages:
@@ -463,6 +491,8 @@ rules:
     message: |
       Potential hardcoded GitLab secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "gitlab_token": "$SECRET"
@@ -470,8 +500,6 @@ rules:
           "gitlabToken": "$SECRET"
       - pattern: |
           "GITLAB_TOKEN": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-bitbucket
     languages:
@@ -480,6 +508,8 @@ rules:
     message: |
       Potential hardcoded Bitbucket secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "bitbucket_token": "$SECRET"
@@ -487,8 +517,6 @@ rules:
           "bitbucketToken": "$SECRET"
       - pattern: |
           "BITBUCKET_TOKEN": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-npm
     languages:
@@ -497,6 +525,8 @@ rules:
     message: |
       Potential hardcoded NPM secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "npm_token": "$SECRET"
@@ -506,8 +536,6 @@ rules:
           "NPM_TOKEN": "$SECRET"
       - pattern: |
           "_authToken": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-docker
     languages:
@@ -516,6 +544,8 @@ rules:
     message: |
       Potential hardcoded Docker secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "docker_password": "$SECRET"
@@ -525,8 +555,6 @@ rules:
           "DOCKER_PASSWORD": "$SECRET"
       - pattern: |
           "docker_hub_password": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-oauth
     languages:
@@ -535,6 +563,8 @@ rules:
     message: |
       Potential hardcoded OAuth secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "oauth_token": "$SECRET"
@@ -548,8 +578,6 @@ rules:
           "oauthSecret": "$SECRET"
       - pattern: |
           "OAUTH_SECRET": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-firebase
     languages:
@@ -558,6 +586,8 @@ rules:
     message: |
       Potential hardcoded Firebase secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "firebase_api_key": "$SECRET"
@@ -567,8 +597,6 @@ rules:
           "FIREBASE_API_KEY": "$SECRET"
       - pattern: |
           "firebase_server_key": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-auth0
     languages:
@@ -577,6 +605,8 @@ rules:
     message: |
       Potential hardcoded Auth0 secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "auth0_client_secret": "$SECRET"
@@ -584,8 +614,6 @@ rules:
           "auth0ClientSecret": "$SECRET"
       - pattern: |
           "AUTH0_CLIENT_SECRET": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-okta
     languages:
@@ -594,6 +622,8 @@ rules:
     message: |
       Potential hardcoded Okta secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "okta_token": "$SECRET"
@@ -602,7 +632,6 @@ rules:
       - pattern: |
           "OKTA_TOKEN": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-private-keys
     languages:
@@ -611,6 +640,8 @@ rules:
     message: |
       Potential hardcoded Private Keys secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "private_key": "$SECRET"
@@ -623,7 +654,6 @@ rules:
       - pattern: |
           "RSA_PRIVATE_KEY": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-encryption-keys
     languages:
@@ -632,6 +662,8 @@ rules:
     message: |
       Potential hardcoded Encryption Keys secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "encryption_key": "$SECRET"
@@ -646,7 +678,6 @@ rules:
       - pattern: |
           "MASTER_KEY": "$SECRET"
     
-    metadata: *common_metadata
   
   - id: json-pattern-009-jwt-secrets
     languages:
@@ -655,6 +686,8 @@ rules:
     message: |
       Potential hardcoded JWT Secrets secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "jwt_secret": "$SECRET"
@@ -667,7 +700,6 @@ rules:
       - pattern: |
           "JWT_KEY": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-signing-keys
     languages:
@@ -676,6 +708,8 @@ rules:
     message: |
       Potential hardcoded Signing Keys secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "signing_key": "$SECRET"
@@ -684,7 +718,6 @@ rules:
       - pattern: |
           "SIGNING_KEY": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-paypal
     languages:
@@ -729,6 +762,8 @@ rules:
     message: |
       Potential hardcoded Braintree secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "braintree_private_key": "$SECRET"
@@ -737,7 +772,6 @@ rules:
       - pattern: |
           "BRAINTREE_PRIVATE_KEY": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-session-secrets
     languages:
@@ -746,6 +780,8 @@ rules:
     message: |
       Potential hardcoded Session Secrets secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "session_secret": "$SECRET"
@@ -753,8 +789,6 @@ rules:
           "sessionSecret": "$SECRET"
       - pattern: |
           "SESSION_SECRET": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-cookie-secrets
     languages:
@@ -763,6 +797,8 @@ rules:
     message: |
       Potential hardcoded Cookie Secrets secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "cookie_secret": "$SECRET"
@@ -771,7 +807,6 @@ rules:
       - pattern: |
           "COOKIE_SECRET": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-webhook-secrets
     languages:
@@ -780,6 +815,8 @@ rules:
     message: |
       Potential hardcoded Webhook Secrets secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "webhook_secret": "$SECRET"
@@ -788,7 +825,6 @@ rules:
       - pattern: |
           "WEBHOOK_SECRET": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-ssh-keys
     languages:
@@ -797,6 +833,8 @@ rules:
     message: |
       Potential hardcoded SSH Keys secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "ssh_key": "$SECRET"
@@ -807,7 +845,6 @@ rules:
       - pattern: |
           "ssh_private_key": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-certificates
     languages:
@@ -816,6 +853,8 @@ rules:
     message: |
       Potential hardcoded Certificates secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "certificate": "$SECRET"
@@ -826,7 +865,6 @@ rules:
       - pattern: |
           "sslCertificate": "$SECRET"
     
-    metadata: *common_metadata
 
   - id: json-pattern-009-api-endpoints-with-credentials
     languages:
@@ -835,6 +873,8 @@ rules:
     message: |
       Potential hardcoded API Endpoints with credentials secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - patterns:
         - pattern-either:
@@ -849,8 +889,6 @@ rules:
         - metavariable-regex:
             metavariable: $URL
             regex: http.*
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-credentials-generic
     languages:
@@ -859,6 +897,8 @@ rules:
     message: |
       Potential hardcoded Credentials generic secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "credentials": "$SECRET"
@@ -868,8 +908,6 @@ rules:
           "auth": "$SECRET"
       - pattern: |
           "authorization": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-google-analytics
     languages:
@@ -878,13 +916,14 @@ rules:
     message: |
       Potential hardcoded Google Analytics secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "ga_tracking_id": "$SECRET"
       - pattern: |
           "google_analytics_key": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-segment
     languages:
@@ -893,6 +932,8 @@ rules:
     message: |
       Potential hardcoded Segment secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "segment_write_key": "$SECRET"
@@ -901,7 +942,6 @@ rules:
       - pattern: |
           "SEGMENT_WRITE_KEY": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-mixpanel
     languages:
@@ -910,6 +950,8 @@ rules:
     message: |
       Potential hardcoded Mixpanel secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "mixpanel_token": "$SECRET"
@@ -918,7 +960,6 @@ rules:
       - pattern: |
           "MIXPANEL_TOKEN": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-jenkins
     languages:
@@ -927,6 +968,8 @@ rules:
     message: |
       Potential hardcoded Jenkins secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "jenkins_token": "$SECRET"
@@ -935,7 +978,6 @@ rules:
       - pattern: |
           "JENKINS_TOKEN": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-circleci
     languages:
@@ -944,6 +986,8 @@ rules:
     message: |
       Potential hardcoded CircleCI secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "circle_token": "$SECRET"
@@ -952,7 +996,6 @@ rules:
       - pattern: |
           "CIRCLE_TOKEN": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-travis
     languages:
@@ -978,6 +1021,8 @@ rules:
     message: |
       Potential hardcoded Telegram secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "telegram_bot_token": "$SECRET"
@@ -986,7 +1031,6 @@ rules:
       - pattern: |
           "TELEGRAM_BOT_TOKEN": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-discord
     languages:
@@ -995,6 +1039,8 @@ rules:
     message: |
       Potential hardcoded Discord secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "discord_token": "$SECRET"
@@ -1005,7 +1051,6 @@ rules:
       - pattern: |
           "discord_webhook": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-whatsapp
     languages:
@@ -1014,6 +1059,8 @@ rules:
     message: |
       Potential hardcoded WhatsApp secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "whatsapp_token": "$SECRET"
@@ -1022,7 +1069,6 @@ rules:
       - pattern: |
           "WHATSAPP_TOKEN": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-sentry
     languages:
@@ -1031,6 +1077,8 @@ rules:
     message: |
       Potential hardcoded Sentry secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "sentry_dsn": "$SECRET"
@@ -1041,7 +1089,6 @@ rules:
       - pattern: |
           "sentry_auth_token": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-datadog
     languages:
@@ -1050,6 +1097,8 @@ rules:
     message: |
       Potential hardcoded Datadog secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "datadog_api_key": "$SECRET"
@@ -1058,7 +1107,6 @@ rules:
       - pattern: |
           "DATADOG_API_KEY": "$SECRET"
     
-    metadata: *common_metadata
  
   - id: json-pattern-009-new-relic
     languages:
@@ -1067,6 +1115,8 @@ rules:
     message: |
       Potential hardcoded New Relic secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "new_relic_license_key": "$SECRET"
@@ -1074,8 +1124,6 @@ rules:
           "newRelicLicenseKey": "$SECRET"
       - pattern: |
           "NEW_RELIC_LICENSE_KEY": "$SECRET"
-    
-    metadata: *common_metadata
  
   - id: json-pattern-009-cloudflare
     languages:
@@ -1084,6 +1132,8 @@ rules:
     message: |
       Potential hardcoded Cloudflare secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "cloudflare_api_key": "$SECRET"
@@ -1091,8 +1141,7 @@ rules:
           "cloudflareApiKey": "$SECRET"
       - pattern: |
           "CLOUDFLARE_API_KEY": "$SECRET"
-    
-    metadata: *common_metadata
+
  
   - id: json-pattern-009-amazon-s3
     languages:
@@ -1101,6 +1150,8 @@ rules:
     message: |
       Potential hardcoded Amazon S3 secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "s3_secret_key": "$SECRET"
@@ -1110,8 +1161,6 @@ rules:
           "S3_SECRET_KEY": "$SECRET"
       - pattern: |
           "s3_access_key": "$SECRET"
-    
-    metadata: *common_metadata
  
   - id: json-pattern-009-shopify
     languages:
@@ -1120,6 +1169,8 @@ rules:
     message: |
       Potential hardcoded Shopify secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "shopify_api_key": "$SECRET"
@@ -1129,8 +1180,6 @@ rules:
           "SHOPIFY_API_KEY": "$SECRET"
       - pattern: |
           "shopify_password": "$SECRET"
-    
-    metadata: *common_metadata
  
   - id: json-pattern-009-wordpress
     languages:
@@ -1139,6 +1188,8 @@ rules:
     message: |
       Potential hardcoded WordPress secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "wp_api_key": "$SECRET"
@@ -1146,8 +1197,6 @@ rules:
           "wpApiKey": "$SECRET"
       - pattern: |
           "WP_API_KEY": "$SECRET"
-    
-    metadata: *common_metadata
  
   - id: json-pattern-009-salesforce
     languages:
@@ -1156,6 +1205,8 @@ rules:
     message: |
       Potential hardcoded Salesforce secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "salesforce_token": "$SECRET"
@@ -1163,8 +1214,6 @@ rules:
           "salesforceToken": "$SECRET"
       - pattern: |
           "SALESFORCE_TOKEN": "$SECRET"
-    
-    metadata: *common_metadata
  
   - id: json-pattern-009-jira
     languages:
@@ -1173,6 +1222,8 @@ rules:
     message: |
       Potential hardcoded Jira secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "jira_token": "$SECRET"
@@ -1180,8 +1231,6 @@ rules:
           "jiraToken": "$SECRET"
       - pattern: |
           "JIRA_TOKEN": "$SECRET"
-    
-    metadata: *common_metadata
 
   - id: json-pattern-009-confluence
     languages:
@@ -1190,6 +1239,8 @@ rules:
     message: |
       Potential hardcoded Confluence secret detected in JSON configuration.
       Move the value to a secret manager or environment variable and rotate exposed credentials.
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-either:
       - pattern: |
           "confluence_token": "$SECRET"
@@ -1197,5 +1248,3 @@ rules:
           "confluenceToken": "$SECRET"
       - pattern: |
           "CONFLUENCE_TOKEN": "$SECRET"
-    
-    metadata: *common_metadata

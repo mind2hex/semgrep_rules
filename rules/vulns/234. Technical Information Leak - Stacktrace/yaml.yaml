@@ -1,0 +1,36 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - audit
+  cwe:
+    - "CWE-209: Generation of Error Message Containing Sensitive Information"
+  confidence: HIGH
+  likelihood: HIGH
+  impact: LOW
+
+paths: &common_paths
+  exclude:
+    - "*test.yaml"
+    - "*test.yml"
+    - "*test.yaml.example"
+    - "*test.yml.example"
+    - "*test.yaml.template"
+    - "*test.yml.template"
+    - "*test.yaml.dist"
+    - "*example*"
+
+rules:
+  - id: yaml-pattern-234-stacktrace-included-always
+    languages:
+      - yaml
+    severity: WARNING
+    message: >
+      Errors or exceptional events are not properly handled by the application
+      allowing an attacker to disclose technical information from system error
+      traces.
+    metadata: *common_metadata
+    paths: *common_paths
+    pattern-either:
+      - patterns:
+          - pattern-regex: includeStacktrace\:[ ]ALWAYS
+    

@@ -1,0 +1,46 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+  # cwe for spoofing
+    - "CWE-290: Authentication Bypass by Spoofing"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: MEDIUM
+
+paths: &common_paths
+  exclude:
+    - "**/*test*/**"
+    - "**/*tests*/**"
+    - "**/*test*/**"
+
+rules:
+  - id: java-pattern-032-spoofing-ip
+    languages: [java]
+    severity: WARNING
+    message: The application found the use of a parameter that contains the IP address of the client.
+    metadata: *common_metadata
+    paths: *common_paths
+    pattern-either:
+      - patterns:
+        - pattern: |
+            @$MAPPING
+            public $RETTYPE $FUNCTION(..., @RequestParam String $X, ...){
+              ...
+            }
+        - metavariable-regex:
+            metavariable: $X
+            regex: (ip|ipAddress|direccionIP)
+        - focus-metavariable: $X
+      - patterns:
+        - pattern-inside: |
+            @$MAPPING(value = "$PATH")
+            public $RETTYPE $FUNCTION(..., @RequestBody $DTO $BODY, ...){
+              ...
+            }
+        - pattern: $X
+        - focus-metavariable: $X
+        - metavariable-regex:
+            metavariable: $X
+            regex: '[a-zA-Z0-9\-\_]*\.(getIp|getIpAddress)\(\)'

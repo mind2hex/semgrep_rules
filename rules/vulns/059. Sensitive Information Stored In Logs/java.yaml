@@ -1,0 +1,39 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-532: Insertion of Sensitive Information into Log File"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: MEDIUM
+  technology:
+    - springframework
+
+paths: &common_paths
+  exclude:
+    - "**/*.test.java"
+    - "**/*.spec.java"
+    - "**/*.unit.java"
+    - "**/*Test.java"
+
+rules:
+  - id: java-patt-information-stored-in-logs
+    languages:
+      - java
+    severity: ERROR
+    message: |
+      Sensitive information is stored in logs.
+    metadata: *common_metadata
+    paths: *common_paths
+    patterns:
+      - pattern: $LOGGER.$METHOD(..., $SECRET, ...);
+      - metavariable-regex:
+          metavariable: $LOGGER
+          regex: (?i)(log|logger|logging)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: (?i)(info|debug|warning|error)
+      - metavariable-regex:
+          metavariable: $SECRET
+          regex: (?i)(jwt|jwttoken|token|secret|password|api|key|pass|credential|cred)
