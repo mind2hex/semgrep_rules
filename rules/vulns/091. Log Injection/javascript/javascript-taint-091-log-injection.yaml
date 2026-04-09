@@ -1,3 +1,51 @@
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-117: Improper Output Neutralization for Logs"
+  confidence: HIGH
+  likelihood: HIGH
+  impact: LOW
+  owasp:
+    - A3:2021 Injection
+
+paths: &common_paths
+  exclude:
+    - "*test.js"
+    - "*test.ts"
+    - "*test.jsx"
+    - "*test.tsx"
+    - "*test.spec.js"
+    - "*test.spec.ts"
+    - "*test.spec.jsx"
+    - "*test.spec.tsx"
+    - "*test.unit.js"
+    - "*test.unit.ts"
+    - "*test.unit.jsx"
+    - "*test.unit.tsx"
+    - "*test.integration.js"
+    - "*test.integration.ts"
+    - "*test.integration.jsx"
+    - "*test.integration.tsx"
+    - "*test.e2e.js"
+    - "*test.e2e.ts"
+    - "*test.e2e.jsx"
+    - "*test.e2e.tsx"
+    - "**/*.component.ts"
+    - "**/*.spec.ts"
+
+    # Exclude files inside directories containing front/front-end/react (case variations)
+    - "**/*front*/**"
+    - "**/*Front*/**"
+    - "**/*FRONT*/**"
+    - "**/*front-end*/**"
+    - "**/*Front-End*/**"
+    - "**/*FRONT-END*/**"
+    - "**/*react*/**"
+    - "**/*React*/**"
+    - "**/*REACT*/**"
+
 rules:
   - id: javascript-taint-091-log-injection
     languages:
@@ -7,6 +55,8 @@ rules:
     message: The system logs entries that contain input from untrusted sources
       without properly validating, sanitizing or escaping their content.
     mode: taint
+    metadata: *common_metadata
+    paths: *common_paths
     pattern-sources:
       - pattern: req.body
       - pattern: req.query
@@ -26,17 +76,3 @@ rules:
       - patterns:
           - pattern-inside: const $LOGGER = require("pino")(); ...
           - pattern: $LOGGER.child(...)
-    metadata:
-      category: security
-      subcategory:
-        - vuln
-      cwe:
-        - "CWE-117: Improper Output Neutralization for Logs"
-      confidence: HIGH
-      likelihood: HIGH
-      impact: LOW
-      owasp:
-        - A3:2021 Injection
-      technology:
-        - nodejs
-        - expressjs

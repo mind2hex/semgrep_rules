@@ -1,0 +1,72 @@
+pattern-sources: &common_pattern_sources
+  - pattern: req.body
+  - pattern: req.query
+  - pattern: req.params
+  - pattern: request.body
+  - pattern: request.query
+  - pattern: request.params
+  - patterns: 
+    - pattern: function $FUNC(..., $SINK, ...)
+    - focus-metavariable: $SINK
+  - patterns:
+      - pattern: const $FUNC = function (..., $PARAM, ...) { ... }
+      - focus-metavariable: $PARAM
+  - patterns:
+      - pattern: app.$HTTPMETHOD('...', (..., $SOURCE, ...) => {...})
+      - focus-metavariable: $SOURCE
+  - patterns:
+      - pattern: module.exports = async function $FUNC(..., $SOURCE, ...){...};
+      - focus-metavariable: $SOURCE
+
+paths: &common_paths
+  exclude:
+    - "*test.js"
+    - "*test.ts"
+    - "*test.jsx"
+    - "*test.tsx"
+    - "*test.spec.js"
+    - "*test.spec.ts"
+    - "*test.spec.jsx"
+    - "*test.spec.tsx"
+    - "*test.unit.js"
+    - "*test.unit.ts"
+    - "*test.unit.jsx"
+    - "*test.unit.tsx"
+    - "*test.integration.js"
+    - "*test.integration.ts"
+    - "*test.integration.jsx"
+    - "*test.integration.tsx"
+    - "*test.e2e.js"
+    - "*test.e2e.ts"
+    - "*test.e2e.jsx"
+    - "*test.e2e.tsx"
+
+metadata: &common_metadata
+  category: security
+  subcategory:
+    - vuln
+  cwe:
+    - "CWE-943: Improper Neutralization of Special Elements in Data Query Logic"
+  confidence: MEDIUM
+  likelihood: MEDIUM
+  impact: MEDIUM
+
+
+rules:
+  - id: javascript-taint-452-gcp-prompt-injection
+    languages:
+      - javascript
+      - typescript
+    severity: HIGH
+    message: >-
+      User-controlled input reaches an LLM prompt (`generateContent`) without proper constraints. 
+      This can enable prompt injection, allowing attackers to override instructions, manipulate model behavior, and potentially 
+      expose sensitive data or trigger unsafe actions. Validate and strictly constrain untrusted input before including it in prompts.
+    mode: taint
+    metadata: *common_metadata
+    paths: *common_paths
+    pattern-sources: *common_pattern_sources
+    pattern-sinks:
+      - patterns:
+        - pattern: await $MODEL.generateContent(..., $SINK, ...);
+        - focus-metavariable: $SINK

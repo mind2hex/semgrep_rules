@@ -43,6 +43,33 @@ paths: &common_paths
     - "*test.spec.js"
     - "*test.spec.ts"
     - "*test.spec.jsx"
+    - "*test.spec.tsx"
+    - "*test.unit.js"
+    - "*test.unit.ts"
+    - "*test.unit.jsx"
+    - "*test.unit.tsx"
+    - "*test.integration.js"
+    - "*test.integration.ts"
+    - "*test.integration.jsx"
+    - "*test.integration.tsx"
+    - "*test.e2e.js"
+    - "*test.e2e.ts"
+    - "*test.e2e.jsx"
+    - "*test.e2e.tsx"
+    - "**/*.component.ts"
+    - "**/*.spec.ts"
+
+    # Exclude files inside directories containing front/front-end/react (case variations)
+    - "**/*front*/**"
+    - "**/*Front*/**"
+    - "**/*FRONT*/**"
+    - "**/*front-end*/**"
+    - "**/*Front-End*/**"
+    - "**/*FRONT-END*/**"
+    - "**/*react*/**"
+    - "**/*React*/**"
+    - "**/*REACT*/**"
+
 
 rules:
 
