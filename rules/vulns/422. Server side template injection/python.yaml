@@ -1,0 +1,16 @@
+rules:
+  - id: python-taint-422-mako-template-ssti
+    languages:
+      - python
+    message: Semgrep found a match
+    severity: HIGH
+    mode: taint
+    pattern-sources:
+      - patterns:
+        - pattern: |
+            def $FUNCTION(..., $SOURCE, ...):
+              ...
+        - focus-metavariable: $SOURCE
+    pattern-sinks:
+      - pattern: Template(...).render()
+    
